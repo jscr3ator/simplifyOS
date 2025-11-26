@@ -325,31 +325,33 @@ app.post('/api/apps/action', (req, res) => {
         return res.status(400).json({ error: "Invalid action" });
     }
 
-    // --- FULL DELETE MODE ---
-    if (action === "delete_full") {
-        console.log(`[Docker] Full delete on ${containerId}`);
+if (action === "delete_full") {
+    console.log(`[Docker] Full delete on ${containerId}`);
 
-        // Step 1: Remove container
-        exec(`docker rm -f ${containerId}`, (err) => {
-            if (err) return res.status(500).json({ error: err.message });
+    // Step 1: Get volumes BEFORE removal
+    exec(`docker inspect ${containerId} -f "{{ range .Mounts }}{{ .Name }} {{ end }}"`, (err, stdout) => {
+        const volumes = stdout.trim();
 
-            // Step 2: Get all volumes attached
-            exec(`docker inspect ${containerId} -f "{{ range .Mounts }}{{ .Name }} {{ end }}"`, (err2, stdout) => {
-                if (err2) return res.json({ success: true, note: "Container removed, no volumes." });
+        // Step 2: Remove container
+        exec(`docker rm -f ${containerId}`, (err2) => {
+            if (err2) return res.status(500).json({ error: err2.message });
 
-                const volumes = stdout.trim();
-                if (!volumes) return res.json({ success: true, note: "No volumes found." });
-
-                // Step 3: Remove volumes
+            // Step 3: Delete volumes if any
+            if (volumes.length > 0) {
                 exec(`docker volume rm ${volumes}`, (err3) => {
                     if (err3) return res.status(500).json({ error: err3.message });
-                    res.json({ success: true });
+                    return res.json({ success: true, volumes });
                 });
-            });
+            } else {
+                // No volumes → done
+                return res.json({ success: true, note: "No volumes found" });
+            }
         });
+    });
 
-        return;
-    }
+    return;
+}
+
 
     // --- NORMAL ACTION ---
     console.log(`[Docker] Action ${action} on ${containerId}`);
