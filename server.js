@@ -317,20 +317,48 @@ app.post('/api/apps/install', (req, res) => {
 
 app.post('/api/apps/action', (req, res) => {
     const { containerId, action } = req.body;
-    const allowedActions = ['start', 'stop', 'restart', 'rm -f'];
-    
-    if (!allowedActions.includes(action)) return res.status(400).json({ error: "Invalid action" });
-    
+
+    // ADD "delete_full" AS A VALID ACTION
+    const allowedActions = ['start', 'stop', 'restart', 'rm -f', 'delete_full'];
+
+    if (!allowedActions.includes(action)) {
+        return res.status(400).json({ error: "Invalid action" });
+    }
+
+    // --- FULL DELETE MODE ---
+    if (action === "delete_full") {
+        console.log(`[Docker] Full delete on ${containerId}`);
+
+        // Step 1: Remove container
+        exec(`docker rm -f ${containerId}`, (err) => {
+            if (err) return res.status(500).json({ error: err.message });
+
+            // Step 2: Get all volumes attached
+            exec(`docker inspect ${containerId} -f "{{ range .Mounts }}{{ .Name }} {{ end }}"`, (err2, stdout) => {
+                if (err2) return res.json({ success: true, note: "Container removed, no volumes." });
+
+                const volumes = stdout.trim();
+                if (!volumes) return res.json({ success: true, note: "No volumes found." });
+
+                // Step 3: Remove volumes
+                exec(`docker volume rm ${volumes}`, (err3) => {
+                    if (err3) return res.status(500).json({ error: err3.message });
+                    res.json({ success: true });
+                });
+            });
+        });
+
+        return;
+    }
+
+    // --- NORMAL ACTION ---
     console.log(`[Docker] Action ${action} on ${containerId}`);
-    
-    exec(`docker ${action} ${containerId}`, (err, stdout, stderr) => {
-        if(err) {
-            console.error(`[Docker Error] ${stderr}`);
-            return res.status(500).json({error: err.message});
-        }
+    exec(`docker ${action} ${containerId}`, (err) => {
+        if (err) return res.status(500).json({ error: err.message });
         res.json({ success: true });
     });
 });
+
 
 const serverListener = (port) => {
     app.listen(port, '0.0.0.0', () => {
