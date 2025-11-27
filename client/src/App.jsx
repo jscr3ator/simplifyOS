@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { 
-  Folder, FileText, Image as ImageIcon, Music, Video, Code, 
-  Search, ChevronLeft, ChevronRight, Home, HardDrive, 
-  Settings, Maximize2, Minimize2, X, LayoutGrid, List, 
+import {
+  Folder, FileText, Image as ImageIcon, Music, Video, Code,
+  Search, ChevronLeft, ChevronRight, Home, HardDrive,
+  Settings, Maximize2, Minimize2, X, LayoutGrid, List,
   Command, Cloud, Battery, Wifi, User, Disc, LogOut,
   Monitor, Bell, Lock, Smartphone, Menu, Globe, Plus,
   Download, Star, Cpu, Terminal, MoreHorizontal, ExternalLink,
   AppWindow, Grid3X3, Power, Bluetooth, Server, Activity,
-  Thermometer, ArrowDown, Clock, File, Play, Square, Trash2, Save, 
+  Thermometer, ArrowDown, Clock, File, Play, Square, Trash2, Save,
   RefreshCw, Type, FileCode, Laptop, Image, Film, Music2, Edit2, PlusSquare,
   Scissors, Copy, Clipboard, Link, ChevronDown, CheckCircle2, XCircle, Loader2,
   AlertTriangle, WifiOff, Network, Info, Shield, Eye, EyeOff, ArrowLeft, ArrowRight, Bookmark,
@@ -15,31 +15,31 @@ import {
   MessageSquare, Gamepad2, Radio
 } from 'lucide-react';
 
-const DEFAULT_WALLPAPER = "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2000&auto=format&fit=crop";
+const DEFAULT_WALLPAPER = "https://www.simplifyos.cloud/wallpaper.png";
 
 const GLOBAL_STYLES = `
 @keyframes popIn { 0% { opacity: 0; transform: scale(0.95) translateY(10px); } 100% { opacity: 1; transform: scale(1) translateY(0); } }
 .animate-popIn { animation: popIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards; }
 /* Improved Glassmorphism */
-.glass-panel { 
-    background: rgba(18, 18, 20, 0.85); 
-    backdrop-filter: blur(32px); 
+.glass-panel {
+    background: rgba(18, 18, 20, 0.85);
+    backdrop-filter: blur(32px);
     -webkit-backdrop-filter: blur(32px);
-    border: 1px solid rgba(255, 255, 255, 0.08); 
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
 }
-.glass-bar { 
-    background: rgba(20, 20, 22, 0.7); 
-    backdrop-filter: blur(20px); 
+.glass-bar {
+    background: rgba(20, 20, 22, 0.7);
+    backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
-    border: 1px solid rgba(255, 255, 255, 0.08); 
+    border: 1px solid rgba(255, 255, 255, 0.08);
 }
-.glass-widget { 
-    background: rgba(20, 20, 22, 0.6); 
-    backdrop-filter: blur(24px); 
+.glass-widget {
+    background: rgba(20, 20, 22, 0.6);
+    backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.05); 
-    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3); 
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
 }
 .scrollbar-hide::-webkit-scrollbar { display: none; }
 /* Text Truncation Mask */
@@ -61,63 +61,310 @@ const ACCENTS = [
 ];
 
 // Extensive list of preset apps with correct Docker images and Icons
+// Extensive list of preset apps with correct Docker images and Icons
+// Icons sourced from the excellent walkxcode/dashboard-icons repository for consistency
 const PRESET_APPS = [
-    // Media
-    { id: 'plex', name: 'Plex', category: 'Media', icon: 'https://www.plex.tv/wp-content/uploads/2018/01/pmp-icon-1.png', cmd: 'docker run -d --name=plex --net=host -e PUID=1000 -e PGID=1000 -v /path/to/library:/config -v /path/to/tvseries:/tv -v /path/to/movies:/movies linuxserver/plex' },
-    { id: 'jellyfin', name: 'Jellyfin', category: 'Media', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/9/9b/Jellyfin_logo.svg/1200px-Jellyfin_logo.svg.png', cmd: 'docker run -d --name=jellyfin -p 8096:8096 jellyfin/jellyfin' },
-    { id: 'tautulli', name: 'Tautulli', category: 'Media', icon: 'https://tautulli.com/images/tautulli_logo.png', cmd: 'docker run -d --name=tautulli -p 8181:8181 linuxserver/tautulli' },
-    { id: 'sonarr', name: 'Sonarr', category: 'Media', icon: 'https://sonarr.tv/img/logo.png', cmd: 'docker run -d --name=sonarr -p 8989:8989 linuxserver/sonarr' },
-    { id: 'radarr', name: 'Radarr', category: 'Media', icon: 'https://radarr.video/img/logo.png', cmd: 'docker run -d --name=radarr -p 7878:7878 linuxserver/radarr' },
-    { id: 'lidarr', name: 'Lidarr', category: 'Media', icon: 'https://lidarr.audio/img/logo.png', cmd: 'docker run -d --name=lidarr -p 8686:8686 linuxserver/lidarr' },
-    { id: 'readarr', name: 'Readarr', category: 'Media', icon: 'https://readarr.com/img/logo.png', cmd: 'docker run -d --name=readarr -p 8787:8787 linuxserver/readarr' },
-    { id: 'prowlarr', name: 'Prowlarr', category: 'Media', icon: 'https://prowlarr.com/img/logo.png', cmd: 'docker run -d --name=prowlarr -p 9696:9696 linuxserver/prowlarr' },
-    { id: 'transmission', name: 'Transmission', category: 'Media', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/8/8f/Transmission_logo.svg/1024px-Transmission_logo.svg.png', cmd: 'docker run -d --name=transmission -p 9091:9091 linuxserver/transmission' },
-    { id: 'qbittorrent', name: 'qBittorrent', category: 'Media', icon: 'https://upload.wikimedia.org/wikipedia/commons/6/66/QBittorrent_Logo.svg', cmd: 'docker run -d --name=qbittorrent -p 8080:8080 linuxserver/qbittorrent' },
-    { id: 'stremthru', name: 'StremThru', category: 'Media', icon: 'https://raw.githubusercontent.com/MunifTanjim/stremthru/main/assets/logo.png', cmd: 'docker run -d --name=stremthru -p 8080:8080 muniftanjim/stremthru' },
-    { id: 'aiostreams', name: 'AIOStreams', category: 'Media', icon: 'https://cdn-icons-png.flaticon.com/512/2989/2989835.png', cmd: 'docker run -d --name=aiostreams -p 3000:3000 aiostreams/aiostreams' },
+    // --- Media ---
+    {
+        id: 'plex',
+        name: 'Plex',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/plex.png',
+        desc: 'Organize and stream your personal collection.',
+        cmd: 'docker run -d --name=plex --net=host -e PUID=1000 -e PGID=1000 -e VERSION=docker -v /docker/plex/config:/config -v /docker/plex/tv:/tv -v /docker/plex/movies:/movies --restart unless-stopped lscr.io/linuxserver/plex:latest'
+    },
+    {
+        id: 'jellyfin',
+        name: 'Jellyfin',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png',
+        desc: 'The Free Software Media System.',
+        cmd: 'docker run -d --name=jellyfin -p 8096:8096 -p 7359:7359/udp -v /docker/jellyfin/config:/config -v /docker/jellyfin/cache:/cache -v /docker/media:/media --restart unless-stopped jellyfin/jellyfin'
+    },
+    {
+        id: 'tautulli',
+        name: 'Tautulli',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tautulli.png',
+        desc: 'Monitor Plex usage and statistics.',
+        cmd: 'docker run -d --name=tautulli -e PUID=1000 -e PGID=1000 -p 8181:8181 -v /docker/tautulli/config:/config --restart unless-stopped lscr.io/linuxserver/tautulli:latest'
+    },
+    {
+        id: 'sonarr',
+        name: 'Sonarr',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sonarr.png',
+        desc: 'Smart TV show management.',
+        cmd: 'docker run -d --name=sonarr -e PUID=1000 -e PGID=1000 -p 8989:8989 -v /docker/sonarr/config:/config -v /docker/media/tv:/tv -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/sonarr:latest'
+    },
+    {
+        id: 'radarr',
+        name: 'Radarr',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/radarr.png',
+        desc: 'Smart movie management.',
+        cmd: 'docker run -d --name=radarr -e PUID=1000 -e PGID=1000 -p 7878:7878 -v /docker/radarr/config:/config -v /docker/media/movies:/movies -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/radarr:latest'
+    },
+    {
+        id: 'lidarr',
+        name: 'Lidarr',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/lidarr.png',
+        desc: 'Music library manager.',
+        cmd: 'docker run -d --name=lidarr -e PUID=1000 -e PGID=1000 -p 8686:8686 -v /docker/lidarr/config:/config -v /docker/media/music:/music -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/lidarr:latest'
+    },
+    {
+        id: 'readarr',
+        name: 'Readarr',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/readarr.png',
+        desc: 'Book manager & automation.',
+        cmd: 'docker run -d --name=readarr -e PUID=1000 -e PGID=1000 -p 8787:8787 -v /docker/readarr/config:/config -v /docker/media/books:/books -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/readarr:develop'
+    },
+    {
+        id: 'prowlarr',
+        name: 'Prowlarr',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png',
+        desc: 'Indexer manager / proxy.',
+        cmd: 'docker run -d --name=prowlarr -e PUID=1000 -e PGID=1000 -p 9696:9696 -v /docker/prowlarr/config:/config --restart unless-stopped lscr.io/linuxserver/prowlarr:latest'
+    },
+    {
+        id: 'transmission',
+        name: 'Transmission',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/transmission.png',
+        desc: 'Fast BitTorrent client.',
+        cmd: 'docker run -d --name=transmission -e PUID=1000 -e PGID=1000 -p 9091:9091 -p 51413:51413 -p 51413:51413/udp -v /docker/transmission/config:/config -v /docker/downloads:/downloads -v /docker/watch:/watch --restart unless-stopped lscr.io/linuxserver/transmission:latest'
+    },
+    {
+        id: 'qbittorrent',
+        name: 'qBittorrent',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png',
+        desc: 'Powerful torrent client.',
+        cmd: 'docker run -d --name=qbittorrent -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -e WEBUI_PORT=8080 -p 8080:8080 -p 6881:6881 -p 6881:6881/udp -v /docker/qbittorrent/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/qbittorrent:latest'
+    },
+    {
+        id: 'stremthru',
+        name: 'StremThru',
+        category: 'Media',
+        icon: 'https://raw.githubusercontent.com/MunifTanjim/stremthru/main/assets/logo.png',
+        desc: 'Companion for Stremio.',
+        cmd: 'docker run -d --name=stremthru -p 8080:8080 muniftanjim/stremthru:latest'
+    },
+    {
+        id: 'aiostreams',
+        name: 'AIOStreams',
+        category: 'Media',
+        icon: 'https://cdn-icons-png.flaticon.com/512/2989/2989835.png',
+        desc: 'All-in-one Stremio streams.',
+        cmd: 'docker run -d --name=aiostreams -p 3000:3000 -e SECRET_KEY=CHANGEME viren070/aiostreams:latest'
+    },
 
-    // Home & Automation
-    { id: 'homeassistant', name: 'Home Assistant', category: 'Utility', icon: 'https://upload.wikimedia.org/wikipedia/commons/6/6e/Home_Assistant_Logo.svg', cmd: 'docker run -d --name=homeassistant --net=host homeassistant/home-assistant:stable' },
-    { id: 'nodered', name: 'Node-RED', category: 'Utility', icon: 'https://upload.wikimedia.org/wikipedia/commons/6/64/Node-RED-Logo.svg', cmd: 'docker run -d -p 1880:1880 --name nodered nodered/node-red' },
-    { id: 'mqtt', name: 'Mosquitto', category: 'Utility', icon: 'https://upload.wikimedia.org/wikipedia/commons/4/4d/Mosquitto_logo.png', cmd: 'docker run -d -p 1883:1883 eclipse-mosquitto' },
-    { id: 'zigbee2mqtt', name: 'Zigbee2MQTT', category: 'Utility', icon: 'https://www.zigbee2mqtt.io/logo.png', cmd: 'docker run -d --name=zigbee2mqtt koenkk/zigbee2mqtt' },
-    { id: 'homebridge', name: 'Homebridge', category: 'Utility', icon: 'https://raw.githubusercontent.com/homebridge/branding/master/logos/homebridge-wordmark-logo-vertical.png', cmd: 'docker run -d --name=homebridge --net=host homebridge/homebridge' },
-    { id: 'scrypted', name: 'Scrypted', category: 'Utility', icon: 'https://raw.githubusercontent.com/koush/scrypted/main/images/scrypted.png', cmd: 'docker run -d --network host koush/scrypted' },
+    // --- Home & Automation ---
+    {
+        id: 'homeassistant',
+        name: 'Home Assistant',
+        category: 'Home',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png',
+        desc: 'Local home automation.',
+        cmd: 'docker run -d --name=homeassistant --net=host -v /docker/homeassistant/config:/config --restart unless-stopped ghcr.io/home-assistant/home-assistant:stable'
+    },
+    {
+        id: 'nodered',
+        name: 'Node-RED',
+        category: 'Home',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/node-red.png',
+        desc: 'Low-code automation.',
+        cmd: 'docker run -d --name=nodered -p 1880:1880 -v /docker/nodered/data:/data --restart unless-stopped nodered/node-red'
+    },
+    {
+        id: 'mqtt',
+        name: 'Mosquitto',
+        category: 'Home',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/mosquitto.png',
+        desc: 'MQTT message broker.',
+        cmd: 'docker run -d --name=mosquitto -p 1883:1883 -p 9001:9001 -v /docker/mosquitto/config:/mosquitto/config -v /docker/mosquitto/data:/mosquitto/data -v /docker/mosquitto/log:/mosquitto/log --restart unless-stopped eclipse-mosquitto'
+    },
+    {
+        id: 'zigbee2mqtt',
+        name: 'Zigbee2MQTT',
+        category: 'Home',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png',
+        desc: 'Zigbee to MQTT bridge.',
+        cmd: 'docker run -d --name=zigbee2mqtt --device=/dev/ttyUSB0:/dev/ttyUSB0 -p 8080:8080 -v /docker/zigbee2mqtt/data:/app/data -v /run/udev:/run/udev:ro --restart unless-stopped koenkk/zigbee2mqtt'
+    },
+    {
+        id: 'homebridge',
+        name: 'Homebridge',
+        category: 'Home',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/homebridge.png',
+        desc: 'HomeKit for everything.',
+        cmd: 'docker run -d --name=homebridge --net=host -v /docker/homebridge:/homebridge --restart unless-stopped homebridge/homebridge'
+    },
+    {
+        id: 'scrypted',
+        name: 'Scrypted',
+        category: 'Home',
+        icon: 'https://raw.githubusercontent.com/koush/scrypted/main/images/scrypted.png',
+        desc: 'High-performance camera hub.',
+        cmd: 'docker run -d --name=scrypted --network host -v /docker/scrypted:/server/volume --restart unless-stopped ghcr.io/koush/scrypted'
+    },
 
-    // Network & Security
-    { id: 'pihole', name: 'Pi-hole', category: 'Network', icon: 'https://upload.wikimedia.org/wikipedia/commons/9/97/Pi-hole_logo.svg', cmd: 'docker run -d --name=pihole -p 53:53/tcp -p 80:80 pihole/pihole' },
-    { id: 'adguard', name: 'AdGuard Home', category: 'Network', icon: 'https://upload.wikimedia.org/wikipedia/commons/5/52/AdGuard_logo.png', cmd: 'docker run -d --name=adguard -p 80:80 adguard/adguardhome' },
-    { id: 'npm', name: 'Nginx Proxy Mgr', category: 'Network', icon: 'https://upload.wikimedia.org/wikipedia/commons/c/c5/Nginx_logo.svg', cmd: 'docker run -d --name=npm -p 80:80 -p 81:81 jc21/nginx-proxy-manager' },
-    { id: 'wireguard', name: 'WireGuard', category: 'Network', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/c7/WireGuard.svg/1200px-WireGuard.svg.png', cmd: 'docker run -d --name=wireguard --cap-add=NET_ADMIN linuxserver/wireguard' },
-    { id: 'tailscale', name: 'Tailscale', category: 'Network', icon: 'https://tailscale.com/files/images/icon.svg', cmd: 'docker run -d --name=tailscale tailscale/tailscale' },
-    { id: 'cloudflare', name: 'Cloudflared', category: 'Network', icon: 'https://upload.wikimedia.org/wikipedia/commons/4/4b/Cloudflare_Logo.svg', cmd: 'docker run -d --name=cloudflared cloudflare/cloudflared' },
+    // --- Network & Security ---
+    {
+        id: 'pihole',
+        name: 'Pi-hole',
+        category: 'Network',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/pi-hole.png',
+        desc: 'Network-wide ad blocking.',
+        cmd: 'docker run -d --name=pihole -p 53:53/tcp -p 53:53/udp -p 80:80 -e TZ=America/Los_Angeles -v /docker/pihole/etc-pihole:/etc/pihole -v /docker/pihole/dnsmasq.d:/etc/dnsmasq.d --cap-add=NET_ADMIN --restart unless-stopped pihole/pihole'
+    },
+    {
+        id: 'adguard',
+        name: 'AdGuard Home',
+        category: 'Network',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard-home.png',
+        desc: 'Ad & tracker blocking DNS.',
+        cmd: 'docker run -d --name=adguardhome -p 53:53/tcp -p 53:53/udp -p 3000:3000 -v /docker/adguard/work:/opt/adguardhome/work -v /docker/adguard/conf:/opt/adguardhome/conf --restart unless-stopped adguard/adguardhome'
+    },
+    {
+        id: 'npm',
+        name: 'Nginx Proxy Mgr',
+        category: 'Network',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nginx-proxy-manager.png',
+        desc: 'Reverse proxy with UI.',
+        cmd: 'docker run -d --name=npm -p 80:80 -p 81:81 -p 443:443 -v /docker/npm/data:/data -v /docker/npm/letsencrypt:/etc/letsencrypt --restart unless-stopped jc21/nginx-proxy-manager:latest'
+    },
+    {
+        id: 'wireguard',
+        name: 'WireGuard',
+        category: 'Network',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/wireguard.png',
+        desc: 'Fast, modern VPN.',
+        cmd: 'docker run -d --name=wireguard --cap-add=NET_ADMIN --cap-add=SYS_MODULE -e PUID=1000 -e PGID=1000 -p 51820:51820/udp -v /docker/wireguard/config:/config -v /lib/modules:/lib/modules --sysctl net.ipv4.conf.all.src_valid_mark=1 --restart unless-stopped lscr.io/linuxserver/wireguard'
+    },
+    {
+        id: 'tailscale',
+        name: 'Tailscale',
+        category: 'Network',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tailscale.png',
+        desc: 'Zero-config mesh VPN.',
+        cmd: 'docker run -d --name=tailscale --net=host --privileged -v /dev/net/tun:/dev/net/tun -v /docker/tailscale:/var/lib/tailscale -e TS_AUTHKEY=YOURKEY tailscale/tailscale'
+    },
+    {
+        id: 'cloudflared',
+        name: 'Cloudflared',
+        category: 'Network',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/cloudflare.png',
+        desc: 'Cloudflare Tunnel.',
+        cmd: 'docker run -d --name=cloudflared cloudflare/cloudflared:latest tunnel --no-autoupdate run --token YOURTOKEN'
+    },
 
-    // Dev & Admin
-    { id: 'portainer', name: 'Portainer', category: 'Dev', icon: 'https://www.portainer.io/hubfs/Brand%20Assets/Logos/Portainer%20Logo%20-%20Solid%20Blue.svg', cmd: 'docker run -d -p 9000:9000 --name=portainer -v /var/run/docker.sock:/var/run/docker.sock portainer/portainer-ce' },
-    { id: 'uptime', name: 'Uptime Kuma', category: 'Dev', icon: 'https://uptime.kuma.pet/img/logo.svg', cmd: 'docker run -d -p 3001:3001 --name uptime-kuma louislam/uptime-kuma:1' },
-    { id: 'glances', name: 'Glances', category: 'Dev', icon: 'https://nicolargo.github.io/glances/public/images/glances.png', cmd: 'docker run -d --name=glances -p 61208:61208 -v /var/run/docker.sock:/var/run/docker.sock nicolargo/glances' },
-    { id: 'dozzle', name: 'Dozzle', category: 'Dev', icon: 'https://raw.githubusercontent.com/amir20/dozzle/master/assets/logo.svg', cmd: 'docker run -d --name=dozzle -p 8888:8080 -v /var/run/docker.sock:/var/run/docker.sock amir20/dozzle' },
-    { id: 'grafana', name: 'Grafana', category: 'Dev', icon: 'https://upload.wikimedia.org/wikipedia/commons/a/a1/Grafana_logo.svg', cmd: 'docker run -d -p 3000:3000 --name=grafana grafana/grafana' },
-    { id: 'prometheus', name: 'Prometheus', category: 'Dev', icon: 'https://upload.wikimedia.org/wikipedia/commons/3/38/Prometheus_software_logo.svg', cmd: 'docker run -d -p 9090:9090 prom/prometheus' },
-    { id: 'postgres', name: 'PostgreSQL', category: 'Dev', icon: 'https://upload.wikimedia.org/wikipedia/commons/2/29/Postgresql_elephant.svg', cmd: 'docker run -d --name=postgres -e POSTGRES_PASSWORD=mysecretpassword postgres' },
-    { id: 'redis', name: 'Redis', category: 'Dev', icon: 'https://upload.wikimedia.org/wikipedia/en/6/6b/Redis_Logo.svg', cmd: 'docker run -d --name=redis redis' },
-    
-    // Cloud & Storage
-    { id: 'nextcloud', name: 'Nextcloud', category: 'Cloud', icon: 'https://upload.wikimedia.org/wikipedia/commons/6/60/Nextcloud_Logo.svg', cmd: 'docker run -d -p 8080:80 nextcloud' },
-    { id: 'syncthing', name: 'Syncthing', category: 'Cloud', icon: 'https://upload.wikimedia.org/wikipedia/commons/thumb/3/3d/Syncthing_Logo_Vertical_Color.svg/1200px-Syncthing_Logo_Vertical_Color.svg.png', cmd: 'docker run -d -p 8384:8384 linuxserver/syncthing' },
-    { id: 'immich', name: 'Immich', category: 'Cloud', icon: 'https://immich.app/img/immich-logo-stacked-dark.svg', cmd: 'docker run -d -p 2283:2283 ghcr.io/immich-app/immich-server:release' },
-    { id: 'paperless', name: 'Paperless-ngx', category: 'Cloud', icon: 'https://raw.githubusercontent.com/paperless-ngx/paperless-ngx/main/resources/logo/logo.svg', cmd: 'docker run -d -p 8000:8000 ghcr.io/paperless-ngx/paperless-ngx' },
-    { id: 'vaultwarden', name: 'Vaultwarden', category: 'Cloud', icon: 'https://upload.wikimedia.org/wikipedia/commons/e/ea/Bitwarden_Logo.svg', cmd: 'docker run -d -p 80:80 vaultwarden/server' },
+    // --- Monitoring ---
+    {
+        id: 'portainer',
+        name: 'Portainer',
+        category: 'Monitoring',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png',
+        desc: 'Docker management UI.',
+        cmd: 'docker run -d --name=portainer -p 9443:9443 -v /var/run/docker.sock:/var/run/docker.sock -v /docker/portainer:/data --restart always portainer/portainer-ce:latest'
+    },
+    {
+        id: 'uptime',
+        name: 'Uptime Kuma',
+        category: 'Monitoring',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/uptime-kuma.png',
+        desc: 'Self-hosted uptime monitor.',
+        cmd: 'docker run -d --name=uptime-kuma -p 3001:3001 -v /docker/uptime-kuma:/app/data --restart=always louislam/uptime-kuma:latest'
+    },
+    {
+        id: 'glances',
+        name: 'Glances',
+        category: 'Monitoring',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/glances.png',
+        desc: 'System monitoring.',
+        cmd: 'docker run -d --name=glances -p 61208:61208 -e GLANCES_OPT="-w" -v /var/run/docker.sock:/var/run/docker.sock:ro --pid host --restart always nicolargo/glances'
+    },
+    {
+        id: 'grafana',
+        name: 'Grafana',
+        category: 'Monitoring',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png',
+        desc: 'Metrics dashboarding.',
+        cmd: 'docker run -d --name=grafana -p 3000:3000 -v /docker/grafana:/var/lib/grafana --restart unless-stopped grafana/grafana'
+    },
+    {
+        id: 'prometheus',
+        name: 'Prometheus',
+        category: 'Monitoring',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prometheus.png',
+        desc: 'Time-series metrics system.',
+        cmd: 'docker run -d --name=prometheus -p 9090:9090 -v /docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml --restart unless-stopped prom/prometheus'
+    },
 
-    // Social & Web
-    { id: 'wordpress', name: 'WordPress', category: 'Social', icon: 'https://upload.wikimedia.org/wikipedia/commons/9/98/WordPress_blue_logo.svg', cmd: 'docker run -d -p 8080:80 wordpress' },
-    { id: 'ghost', name: 'Ghost', category: 'Social', icon: 'https://upload.wikimedia.org/wikipedia/commons/5/5d/Ghost_logo.svg', cmd: 'docker run -d -p 2368:2368 ghost' },
-    { id: 'mastodon', name: 'Mastodon', category: 'Social', icon: 'https://upload.wikimedia.org/wikipedia/commons/4/48/Mastodon_Logotype_(Simple).svg', cmd: 'docker run -d -p 3000:3000 mastodon/mastodon' },
-    
-    // Bots & Fun
-    { id: 'mcdiscordbot', name: 'MC Discord Bot', category: 'Dev', icon: 'https://assets-global.website-files.com/6257adef93867e56f84d3092/636e0a6a49cf127bf92de1e2_icon_clyde_blurple_RGB.png', cmd: 'docker run -d --name=mcdiscordbot ...' },
-    { id: 'minecraft', name: 'Minecraft', category: 'Game', icon: 'https://upload.wikimedia.org/wikipedia/en/5/51/Minecraft_cover.png', cmd: 'docker run -d -p 25565:25565 itzg/minecraft-server' },
+    // --- Productivity ---
+    {
+        id: 'nextcloud',
+        name: 'Nextcloud',
+        category: 'Productivity',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nextcloud.png',
+        desc: 'Self-hosted cloud storage.',
+        cmd: 'docker run -d --name=nextcloud -p 8080:80 -v /docker/nextcloud:/var/www/html --restart unless-stopped nextcloud'
+    },
+    {
+        id: 'syncthing',
+        name: 'Syncthing',
+        category: 'Productivity',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/syncthing.png',
+        desc: 'Self-hosted file sync.',
+        cmd: 'docker run -d --name=syncthing -p 8384:8384 -p 22000:22000/tcp -p 22000:22000/udp -p 21027:21027/udp -v /docker/syncthing:/var/syncthing --restart unless-stopped linuxserver/syncthing'
+    },
+    {
+        id: 'photoprism',
+        name: 'PhotoPrism',
+        category: 'Productivity',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/photoprism.png',
+        desc: 'AI-powered photo manager.',
+        cmd: 'docker run -d --name=photoprism -p 2342:2342 -v /docker/photoprism/originals:/photoprism/originals -v /docker/photoprism/storage:/photoprism/storage -e PHOTOPRISM_ADMIN_PASSWORD=admin --restart unless-stopped photoprism/photoprism'
+    },
+    {
+        id: 'filebrowser',
+        name: 'FileBrowser',
+        category: 'Productivity',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/filebrowser.png',
+        desc: 'Web-based file manager.',
+        cmd: 'docker run -d --name=filebrowser -p 8081:80 -v /docker/files:/srv filebrowser/filebrowser'
+    },
+    {
+        id: 'vaultwarden',
+        name: 'Vaultwarden',
+        category: 'Productivity',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vaultwarden.png',
+        desc: 'Self-hosted password manager.',
+        cmd: 'docker run -d --name=vaultwarden -p 80:80 -p 3012:3012 -v /docker/vaultwarden:/data -e WEBSOCKET_ENABLED=true --restart unless-stopped vaultwarden/server:latest'
+    },
+    {
+        id: 'ghost',
+        name: 'Ghost',
+        category: 'Productivity',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/ghost.png',
+        desc: 'Blogging platform.',
+        cmd: 'docker run -d --name=ghost -p 2368:2368 -e url=http://localhost:2368 -v /docker/ghost/content:/var/lib/ghost/content --restart unless-stopped ghost:latest'
+    },
+
+    // --- Gaming ---
+    {
+        id: 'minecraft',
+        name: 'Minecraft Server',
+        category: 'Gaming',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/minecraft.png',
+        desc: 'Minecraft Java Edition server.',
+        cmd: 'docker run -d --name=minecraft -p 25565:25565 -e EULA=TRUE -v /docker/minecraft:/data --restart unless-stopped itzg/minecraft-server'
+    }
 ];
+
 
 const WALLPAPERS = [
   { name: "Forest", url: "https://images.unsplash.com/photo-1473448912268-2022ce9509d8?q=80&w=2000&auto=format&fit=crop" },
@@ -135,6 +382,7 @@ const WALLPAPERS = [
   { name: "MacOS", url: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWFjJTIwb3MlMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D" },
   { name: "Windows", url: "https://blogs.windows.com/wp-content/uploads/sites/2/2021/10/Windows-11-Bloom-Screensaver-Dark-scaled.jpg" },
   { name: "Linux", url: "https://cdn.wallpapersafari.com/92/90/CsKwS8.png" },
+  { name: "SimplifyOS", url: "https://www.simplifyos.cloud/wallpaper.png" },
 ];
 
 // --- Helpers ---
@@ -174,7 +422,7 @@ function useSystemStats(serverUrl) {
         } else if(mounted) setIsConnected(false);
       } catch (e) { if(mounted) setIsConnected(false); }
     };
-    fetchStats(); 
+    fetchStats();
     const interval = setInterval(fetchStats, 3000);
     return () => { mounted = false; clearInterval(interval); };
   }, [serverUrl]);
@@ -203,7 +451,7 @@ function LoginScreen({ onLogin, wallpaper, ready }) {
   const [password, setPassword] = useState("");
   const [url, setUrl] = useState("");
   const [loading, setLoading] = useState(false);
-  const [connectionStatus, setConnectionStatus] = useState("neutral"); 
+  const [connectionStatus, setConnectionStatus] = useState("neutral");
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -243,7 +491,7 @@ function LoginScreen({ onLogin, wallpaper, ready }) {
               body: JSON.stringify({ password })
           });
           const data = await auth.json();
-          if(data.success) { onLogin("Admin", target, data.settings); } 
+          if(data.success) { onLogin("Admin", target, data.settings); }
           else { setError("Incorrect Password"); setLoading(false); }
       } catch { setError("Auth Failed"); setLoading(false); }
   };
@@ -261,7 +509,7 @@ function LoginScreen({ onLogin, wallpaper, ready }) {
             <div className="w-20 h-20 bg-emerald-500 rounded-full mx-auto mb-8 shadow-[0_0_40px_rgba(16,185,129,0.5)] flex items-center justify-center"><User size={32} color="white"/></div>
             <h1 className="text-2xl font-bold text-white mb-6">Welcome</h1>
             {ready && <div className="text-emerald-400 text-xs font-bold mb-4 flex items-center justify-center gap-2"><CheckCircle2 size={14}/> System Ready</div>}
-            
+
             <div className="space-y-4 mb-6">
                 <div className="relative">
                      <input className={`w-full bg-black/50 border ${getBorderColor()} rounded-xl px-4 py-3 text-white outline-none text-center text-sm font-mono transition-all duration-300`} value={url} onChange={(e) => setUrl(e.target.value)} placeholder="Server IP:Port" />
@@ -293,7 +541,7 @@ function TopBar({ stats, isConnected, deviceName, accent }) {
   const diskFree = Math.max(0, diskTotal - diskUsed);
   const diskFreeStr = formatBytes(diskFree);
   const cpuLoad = Math.round(stats?.cpu?.load || 0);
-  const displayName = stats?.hostname || deviceName || "Station";
+  const displayName = "simplifyOS"
 
   return (
     <div className="absolute top-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
@@ -315,10 +563,12 @@ function TopBar({ stats, isConnected, deviceName, accent }) {
 
 function Window({ config, children, isActive, onFocus, onClose, onMinimize, onMaximize, isMinimized, isMaximized }) {
   const windowRef = useRef(null);
-  // Store position and size in state for persistence
   const [pos, setPos] = useState({ x: config.x, y: config.y });
   const [size, setSize] = useState({ w: config.width || 900, h: config.height || 600 });
-  
+
+  // State to disable CSS transitions while dragging for instant movement
+  const [isDraggingState, setIsDraggingState] = useState(false);
+
   // Refs for dragging to avoid re-renders
   const dragStart = useRef({ x: 0, y: 0 });
   const initialPos = useRef({ x: 0, y: 0 });
@@ -326,74 +576,65 @@ function Window({ config, children, isActive, onFocus, onClose, onMinimize, onMa
 
   const handleMouseDown = (e) => {
     if (isMaximized || e.target.closest('button') || e.target.closest('.resize-handle')) return;
-    
+
     isDragging.current = true;
+    setIsDraggingState(true); // Disable transitions immediately
+
     dragStart.current = { x: e.clientX, y: e.clientY };
     initialPos.current = { x: pos.x, y: pos.y };
-    
+
     onFocus();
-    document.body.style.userSelect = 'none'; // Prevent text selection
+    document.body.style.userSelect = 'none';
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('mouseup', handleMouseUp);
   };
 
   const handleMouseMove = (e) => {
     if (!isDragging.current) return;
-    
+
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
-    
+
     const newX = initialPos.current.x + dx;
     const newY = initialPos.current.y + dy;
 
-    // Direct DOM update for performance (60fps)
     if (windowRef.current) {
-      windowRef.current.style.transform = `translate(${newX}px, ${newY}px)`;
+        windowRef.current.style.left = `${newX}px`;
+        windowRef.current.style.top = `${newY}px`;
     }
   };
 
   const handleMouseUp = (e) => {
     if (!isDragging.current) return;
-    
+
     isDragging.current = false;
+    setIsDraggingState(false); // Re-enable transitions
     document.body.style.userSelect = '';
-    
-    // Finalize position in state
+
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
     setPos({ x: initialPos.current.x + dx, y: initialPos.current.y + dy });
-    
+
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('mouseup', handleMouseUp);
   };
 
-  // Calculate Styles dynamically
-  const windowStyle = isMaximized 
-    ? { top: 0, left: 0, width: '100vw', height: '100vh', transform: 'none', borderRadius: 0 } 
-    : { width: size.w, height: size.h, transform: `translate(${pos.x}px, ${pos.y}px)` };
+  const windowStyle = isMaximized
+    ? { top: 0, left: 0, width: '100vw', height: '100vh', transform: 'none', borderRadius: 0 }
+    : { width: size.w, height: size.h, left: pos.x, top: pos.y };
 
   if (isMinimized) windowStyle.display = 'none';
 
-  const handleMaximizeClick = () => {
-    if (isMaximized) {
-        onMaximize(false, config.id, pos, size);
-    } else {
-        const desktopWidth = window.innerWidth;
-        const desktopHeight = window.innerHeight;
-        onMaximize(true, config.id, pos, size, desktopWidth, desktopHeight);
-    }
-  };
-
   return (
-    <div 
-      ref={windowRef} 
-      className={`absolute flex flex-col glass-panel rounded-xl overflow-hidden shadow-2xl transition-all duration-200 ${isActive ? 'z-50 ring-1 ring-white/10' : 'z-10 opacity-90 scale-[0.99] grayscale-[0.2]'} ${isMaximized ? 'fixed inset-0 !w-screen !h-screen !translate-x-0 !translate-y-0 !rounded-none shadow-none' : ''}`} 
-      style={windowStyle} 
+    <div
+      ref={windowRef}
+      // Added logic: if dragging, use transition-none, otherwise use transition-all
+      className={`absolute flex flex-col glass-panel rounded-xl overflow-hidden shadow-2xl ${isDraggingState ? 'transition-none' : 'transition-all duration-200'} ${isActive ? 'z-50 ring-1 ring-white/10' : 'z-10 opacity-90 scale-[0.99] grayscale-[0.2]'}`}
+      style={windowStyle}
       onMouseDown={handleMouseDown}
     >
         <div className="window-header h-11 bg-black/40 flex items-center justify-between px-4 select-none cursor-default border-b border-white/5">
             <div className="flex space-x-2 group">
-              {/* Close Button (Red) */}
               <button onClick={(e) => {e.stopPropagation(); onClose();}} className="w-3 h-3 rounded-full bg-[#FF5F57] text-[#FF5F57] hover:text-black/50 flex items-center justify-center transition-colors">
                 <X size={8} className="opacity-0 group-hover:opacity-100"/>
               </button>
@@ -418,7 +659,7 @@ function DesktopWidget({ widget, stats, onMove, onRemove }) {
     const [time, setTime] = useState(new Date());
     useEffect(() => { if (widget.type === 'clock') { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); } }, [widget.type]);
     useEffect(() => { const handleMove = (e) => { if (!dragging) return; setPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y }); }; const handleUp = () => { if (dragging) { setDragging(false); onMove(widget.id, pos.x, pos.y); } }; window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleUp); return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleUp); } }, [dragging]);
-    
+
     const diskTotal = stats?.storage?.total || 1;
     const diskUsed = stats?.storage?.used || 0;
 
@@ -436,8 +677,18 @@ function DesktopWidget({ widget, stats, onMove, onRemove }) {
 function ContextMenu({ x, y, type, data, onAction }) {
     return (
         <div className="absolute z-[9999] w-56 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl py-1.5 animate-in fade-in zoom-in-95 duration-100" style={{ left: x, top: y }}>
-            {type === 'desktop' && <><button onClick={() => onAction('new_folder')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Folder size={14}/> New Folder</button><button onClick={() => onAction('new_file')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><FileText size={14}/> New File</button><div className="h-px bg-white/10 my-1 mx-2"/><button onClick={() => onAction('settings')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Settings size={14}/> Settings</button><button onClick={() => onAction('paste')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3 text-blue-400"><Clipboard size={14}/> Paste Here</button></>}
-            {type === 'file' && <><div className="px-4 py-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-white/10 mb-1 max-w-[180px] truncate">{data.name}</div><button onClick={() => onAction('open', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Open</button><button onClick={() => onAction('copy', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Copy</button><button onClick={() => onAction('rename', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Rename</button><div className="h-px bg-white/10 my-1 mx-2"/><button onClick={() => onAction('delete', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-red-500/20 text-red-400 transition-colors">Delete</button></>}
+          {(type === 'desktop' || type === 'folder') && <>
+  <button onClick={() => onAction('new_folder')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Folder size={14}/> New Folder</button>
+  <button onClick={() => onAction('new_file')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><FileText size={14}/> New File</button>
+  <div className="h-px bg-white/10 my-1 mx-2"/>
+  <button onClick={() => onAction('settings')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Settings size={14}/> Settings</button>
+  <button onClick={() => onAction('paste')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3 text-blue-400"><Clipboard size={14}/> Paste Here</button>
+</>}
+
+
+            {type === 'file' && <><div className="px-4 py-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-white/10 mb-1 max-w-[180px] truncate">{data.name}</div><button onClick={() => onAction('open', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Open</button><button onClick={() => onAction('copy', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Copy</button>
+<button onClick={() => onAction('cut', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Cut</button>
+<button onClick={() => onAction('rename', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Rename</button><div className="h-px bg-white/10 my-1 mx-2"/><button onClick={() => onAction('delete', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-red-500/20 text-red-400 transition-colors">Delete</button></>}
         </div>
     )
 }
@@ -454,7 +705,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
   const [loading, setLoading] = useState(false);
   const [modal, setModal] = useState(null);
   const [trashMode, setTrashMode] = useState(false);
-  const [viewMode, setViewMode] = useState('grid'); 
+  const [viewMode, setViewMode] = useState('grid');
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
@@ -465,7 +716,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
     setTrashMode(isTrash);
     setSelected(null);
     try {
-      const p = isTrash ? '' : (targetPath || path || ''); 
+      const p = isTrash ? '' : (targetPath || path || '');
       const res = await fetch(`${serverUrl}/api/files/list?path=${encodeURIComponent(p)}${isTrash ? '&trash=true' : ''}`);
       const data = await res.json();
       setFiles(data.items || []);
@@ -505,13 +756,13 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
 
   // Breadcrumbs Logic
   const pathParts = path ? path.split((path.includes('\\') ? '\\' : '/')).filter(Boolean) : [];
-  
+
   const Breadcrumbs = () => (
       <div className="flex items-center text-sm font-medium overflow-hidden whitespace-nowrap mask-linear-fade">
           <button onClick={() => loadFiles(homeDir)} className="p-1.5 hover:bg-white/10 rounded-md text-zinc-400 hover:text-white transition-colors"><Home size={16}/></button>
           {pathParts.map((part, i) => {
              const target = pathParts.slice(0, i+1).join(path.includes('\\') ? '\\' : '/');
-             const fullTarget = path.startsWith('/') ? '/' + target : target; 
+             const fullTarget = path.startsWith('/') ? '/' + target : target;
              return (
               <React.Fragment key={i}>
                   <ChevronRight size={14} className="text-zinc-600 mx-1"/>
@@ -526,7 +777,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
 
   const SidebarLink = ({ icon, label, target, isTrash }) => (
     <button onClick={() => loadFiles(target, isTrash)} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm w-full text-left mb-0.5 transition-all duration-200 group ${(!isTrash && path === target) || (isTrash && trashMode) ? `${accent.bg} text-white shadow-lg shadow-${accent.name.toLowerCase()}-500/20` : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-100'}`}>
-      {React.cloneElement(icon, { size: 16, className: ((!isTrash && path === target) || (isTrash && trashMode)) ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300' })} 
+      {React.cloneElement(icon, { size: 16, className: ((!isTrash && path === target) || (isTrash && trashMode)) ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300' })}
       <span>{label}</span>
     </button>
   );
@@ -553,7 +804,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                   <button onClick={() => { loadFiles(path + '/..') }} className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white"><ArrowLeft size={18}/></button>
                   <button onClick={() => loadFiles(path)} className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white"><RefreshCw size={16}/></button>
               </div>
-              
+
               <div className="flex-1 flex items-center bg-[#1a1a1a] border border-white/5 rounded-xl px-3 h-9 max-w-2xl mx-auto shadow-inner">
                  <Search size={14} className="text-zinc-500 mr-2"/>
                  <input className="bg-transparent border-none outline-none text-xs w-full text-zinc-300 placeholder-zinc-600" placeholder={`Search in ${pathParts[pathParts.length-1] || 'Home'}...`} value={search} onChange={e => setSearch(e.target.value)} />
@@ -577,15 +828,15 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                 )}
               </div>
           </div>
-          
+
           {/* Breadcrumbs Bar */}
           <div className="h-10 border-b border-white/5 flex items-center px-6 bg-black/10">
               <Breadcrumbs />
           </div>
 
           {/* File Area */}
-          <div 
-             className="flex-1 overflow-y-auto p-6 relative select-none" 
+          <div
+             className="flex-1 overflow-y-auto p-6 relative select-none"
              onContextMenu={e => { if(e.target === e.currentTarget) { onContextMenu(e, null, path); }}}
              onDragOver={e => { e.preventDefault(); e.dataTransfer.dropEffect = "copy"; }}
              onDrop={e => { e.preventDefault(); onDrop(e, path); }}
@@ -606,25 +857,25 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                       const isImg = ['jpg','jpeg','png','gif','webp'].some(e => f.name.toLowerCase().endsWith(e));
                       const isSelected = selected === f.path;
                       return (
-                      <div 
-                        key={i} 
+                      <div
+                        key={i}
                         draggable
                         onDragStart={(e) => e.dataTransfer.setData("text/plain", f.path)}
                         onClick={(e) => { e.stopPropagation(); setSelected(f.path); }}
-                        onDoubleClick={(e) => { e.stopPropagation(); f.type === 'folder' ? loadFiles(f.path, trashMode) : onOpenFile(f); }} 
-                        onContextMenu={(e) => { setSelected(f.path); onContextMenu(e, f, path); }} 
+                        onDoubleClick={(e) => { e.stopPropagation(); f.type === 'folder' ? loadFiles(f.path, trashMode) : onOpenFile(f); }}
+                        onContextMenu={(e) => { setSelected(f.path); onContextMenu(e, f, path); }}
                         className={`
-                            ${viewMode === 'grid' 
-                                ? "flex flex-col items-center p-4 rounded-2xl cursor-pointer transition-all border group relative" 
+                            ${viewMode === 'grid'
+                                ? "flex flex-col items-center p-4 rounded-2xl cursor-pointer transition-all border group relative"
                                 : "flex items-center gap-4 p-2 rounded-lg cursor-pointer border-b border-white/5 hover:bg-white/5"
                             }
-                            ${isSelected 
-                                ? "bg-blue-500/20 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]" 
+                            ${isSelected
+                                ? "bg-blue-500/20 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                                 : "bg-transparent border-transparent hover:bg-white/5"
                             }
                         `}>
                           <div className={viewMode === 'grid' ? "w-16 h-16 mb-3 transition-transform group-hover:scale-105" : "w-8 h-8"}>
-                              {f.type === 'folder' ? <Folder className={`w-full h-full ${accent.text} fill-current opacity-90`}/> : 
+                              {f.type === 'folder' ? <Folder className={`w-full h-full ${accent.text} fill-current opacity-90`}/> :
                                isImg && viewMode === 'grid' ? <img src={`${serverUrl}/api/files/view?path=${encodeURIComponent(f.path)}`} className="w-full h-full object-cover rounded-lg shadow-sm bg-black/50"/> :
                                getFileIcon(f.name)}
                           </div>
@@ -636,7 +887,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                   )})}
               </div>)}
           </div>
-          
+
           {/* Footer Status Bar */}
           <div className="h-8 bg-[#151515] border-t border-white/5 flex items-center px-4 text-[10px] text-zinc-500 gap-4">
               <span>{files.length} items</span>
@@ -657,67 +908,54 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
   );
 }
 
-function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) { 
+function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
     const [containers, setContainers] = useState([]);
-    const [actioning, setActioning] = useState(null); 
-    const [downloadProgress, setDownloadProgress] = useState(0); 
-    const [view, setView] = useState('installed'); 
+    const [actioning, setActioning] = useState(null);
+    const [downloadProgress, setDownloadProgress] = useState(0);
+    const [view, setView] = useState('installed');
     const [category, setCategory] = useState('All');
     const [selectedApp, setSelectedApp] = useState(null);
 
-    const fetchApps = async () => { 
-        try { 
-            const res = await fetch(`${serverUrl}/api/apps/list`); 
-            setContainers(await res.json()); 
-        } catch (e) { 
-            // Silent error
-        } 
+    const fetchApps = async () => {
+        try {
+            const res = await fetch(`${serverUrl}/api/apps/list`);
+            setContainers(await res.json());
+        } catch (e) {}
     };
 
     useEffect(() => {
         fetchApps();
-        const interval = setInterval(fetchApps, 2000); 
+        const interval = setInterval(fetchApps, 2000);
         return () => clearInterval(interval);
     }, [serverUrl]);
 
-    // Simulated progress bar logic
     useEffect(() => {
         let progressInterval;
         if (actioning && downloadProgress < 99) {
             progressInterval = setInterval(() => {
-                setDownloadProgress(prev => Math.min(99, prev + 5)); 
+                setDownloadProgress(prev => Math.min(99, prev + 5));
             }, 300);
         } else if (!actioning) {
-             setDownloadProgress(0); 
+             setDownloadProgress(0);
         }
         return () => clearInterval(progressInterval);
     }, [actioning, downloadProgress]);
 
-
-    const installApp = async (cmd, id) => { 
-        setActioning(id); 
-        setDownloadProgress(1); 
-        try { 
-            await fetch(`${serverUrl}/api/apps/install`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: cmd }) }); 
-            
-            setTimeout(() => {
-                setDownloadProgress(100);
-                fetchApps();
-            }, 5000); 
-            
-        } catch (e) {
-            setDownloadProgress(0); 
-        } finally {
-            setTimeout(() => setActioning(null), 6000); 
-        }
+    const installApp = async (cmd, id) => {
+        setActioning(id);
+        setDownloadProgress(1);
+        try {
+            await fetch(`${serverUrl}/api/apps/install`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: cmd }) });
+            setTimeout(() => { setDownloadProgress(100); fetchApps(); }, 5000);
+        } catch (e) { setDownloadProgress(0); } finally { setTimeout(() => setActioning(null), 6000); }
     };
 
-    const toggleContainer = async (id, action) => { 
-        setActioning(id); 
-        try { 
+    const toggleContainer = async (id, action) => {
+        setActioning(id);
+        try {
             await fetch(`${serverUrl}/api/apps/action`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ containerId: id, action }) });
-            setTimeout(fetchApps, 1000); 
-        } catch(e) {} 
+            setTimeout(fetchApps, 1000);
+        } catch(e) {}
         setTimeout(() => setActioning(null), 1000);
     };
 
@@ -726,10 +964,7 @@ function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
         try {
             const hostname = new URL(serverUrl).hostname;
             return `http://${hostname}:${port}`;
-        } catch (e) {
-            console.error("Invalid server URL, falling back to localhost");
-            return `http://localhost:${port}`;
-        }
+        } catch (e) { return `http://localhost:${port}`; }
     };
 
     const openContainerInternal = (port, label) => {
@@ -741,48 +976,32 @@ function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
     const openContainerOs = async (port) => {
         const url = buildUrlFromPort(port);
         if (!url) return;
-        try {
-            // Note: This relies on the server having xdg-open (Linux/WSL) or a similar command to open a URL
-            await fetch(`${serverUrl}/api/terminal/exec`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ command: `xdg-open ${url}` })
-            });
-        } catch (e) {
-            console.error("Failed to open in OS browser", e);
-        }
+        try { await fetch(`${serverUrl}/api/terminal/exec`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ command: `xdg-open ${url}` }) }); } catch (e) {}
     };
 
-    // SMART ICON MATCHER: Finds the best icon for running containers even if they aren't in PRESET_APPS
     const getAppIcon = (container) => {
         const imageName = container.image.toLowerCase();
         const name = container.name.toLowerCase();
-        
-        // 1. Check exact preset match
         const known = PRESET_APPS.find(p => imageName.includes(p.id) || name.includes(p.id));
         if (known) return known.icon;
-
-        // 2. Heuristic Matching
+        if (imageName.startsWith('node') || imageName.startsWith('js')) return 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Node.js_logo.svg/1200px-Node.js_logo.svg.png';
+        if (imageName.startsWith('python')) return 'https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg';
         if (imageName.includes('docker') || imageName.includes('dind')) return 'https://www.docker.com/wp-content/uploads/2022/03/vertical-logo-monochromatic.png';
-        if (imageName.includes('node') || imageName.includes('js')) return 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/d9/Node.js_logo.svg/1200px-Node.js_logo.svg.png';
-        if (imageName.includes('python')) return 'https://upload.wikimedia.org/wikipedia/commons/c/c3/Python-logo-notext.svg';
-        if (imageName.includes('bot') || name.includes('bot')) return 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png'; // Robot icon
-        if (imageName.includes('db') || imageName.includes('sql') || imageName.includes('mongo')) return 'https://cdn-icons-png.flaticon.com/512/2906/2906274.png'; // DB icon
-        if (imageName.includes('game') || imageName.includes('server')) return 'https://cdn-icons-png.flaticon.com/512/686/686589.png'; // Game icon
-
-        // 3. Fallback to a generated initial or generic icon
-        return 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/generic-app.svg'; 
+        if (imageName.includes('bot') || name.includes('bot')) return 'https://cdn-icons-png.flaticon.com/512/4712/4712035.png';
+        if (imageName.includes('db') || imageName.includes('sql') || imageName.includes('mongo')) return 'https://cdn-icons-png.flaticon.com/512/2906/2906274.png';
+        if (imageName.includes('game') || imageName.includes('server')) return 'https://cdn-icons-png.flaticon.com/512/686/686589.png';
+        return 'https://raw.githubusercontent.com/walkxcode/dashboard-icons/main/svg/generic-app.svg';
     };
 
     if (!isConnected) return <div className="flex items-center justify-center h-full text-zinc-500 flex-col gap-4"><WifiOff size={40} className="opacity-50"/><span>Server Offline</span></div>;
-    
+
     const categories = ['All', ...new Set(PRESET_APPS.map(a => a.category))];
     const filteredApps = category === 'All' ? PRESET_APPS : PRESET_APPS.filter(a => a.category === category);
 
     if (view === 'details' && selectedApp) {
         const isInstalled = containers.some(c => c.image.includes(selectedApp.id));
         const installing = actioning === selectedApp.id;
-        
+
         return (
             <div className="flex flex-col h-full bg-[#0a0a0a] text-white relative animate-in fade-in zoom-in-95 duration-200">
                  <div className="h-64 w-full relative group">
@@ -801,21 +1020,20 @@ function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
                             {isInstalled && <span className="flex items-center gap-1 text-green-400 text-xs font-bold uppercase tracking-wider"><CheckCircle2 size={12}/> Installed</span>}
                          </div>
                          <p className="text-zinc-400 mb-6 max-w-xl text-lg leading-relaxed">{selectedApp.desc}</p>
-                         
-                         {/* Progress Bar Display */}
+
                          {installing && (
                             <div className="w-full h-2 rounded-full bg-zinc-700 mb-3 overflow-hidden">
                                 <div className="h-full bg-blue-500 transition-all duration-300 ease-linear" style={{ width: `${downloadProgress}%` }} />
                             </div>
                          )}
-                         
+
                          <button onClick={() => !isInstalled && installApp(selectedApp.cmd, selectedApp.id)} disabled={isInstalled || installing} className={`px-12 py-4 rounded-2xl font-bold text-sm shadow-xl transition-all hover:scale-105 active:scale-95 ${isInstalled ? 'bg-zinc-900 text-zinc-500 border border-white/5 cursor-default' : 'bg-blue-600 hover:bg-blue-500 text-white shadow-blue-500/20'}`}>
                              {installing ? <div className="flex items-center gap-2"><Loader2 className="animate-spin" size={20}/> INSTALLING ({downloadProgress}%)</div> : isInstalled ? 'INSTALLED' : 'INSTALL APP'}
                          </button>
                      </div>
                  </div>
             </div>
-        )
+        );
     }
 
     return (
@@ -826,7 +1044,7 @@ function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
                     <button onClick={() => setView('installed')} className={`w-full text-left px-4 py-3 rounded-xl text-sm flex items-center gap-3 transition-all duration-200 ${view === 'installed' ? 'bg-white/10 text-white font-medium shadow-lg ring-1 ring-white/5' : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'}`}><Package size={18}/> Manage Apps</button>
                     <button onClick={() => setView('store')} className={`w-full text-left px-4 py-3 rounded-xl text-sm flex items-center gap-3 transition-all duration-200 ${view === 'store' ? 'bg-blue-600 text-white font-medium shadow-lg shadow-blue-500/20' : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-200'}`}><Grid3X3 size={18}/> Discover</button>
                  </div>
-                 
+
                  {view === 'store' && (
                      <div className="animate-in slide-in-from-left-4 fade-in duration-300">
                          <div className="h-px bg-white/5 my-4 mx-4"/>
@@ -845,19 +1063,26 @@ function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
                             <h2 className="text-3xl font-bold tracking-tight">Discover</h2>
                             <div className="text-sm text-zinc-500">{filteredApps.length} apps available</div>
                         </div>
-                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {filteredApps.map(app => {
-                                const isInstalled = containers.some(c => c.image.includes(app.id));
-                                return (
-                                <div key={app.id} onClick={() => { setSelectedApp(app); setView('details'); }} className="bg-[#121212] border border-white/5 p-5 rounded-3xl hover:bg-[#1a1a1a] transition-all cursor-pointer group hover:-translate-y-1 duration-300 shadow-lg hover:shadow-2xl hover:border-white/10 relative overflow-hidden">
-                                    <div className="flex justify-between items-start mb-4 relative z-10">
-                                        <div className="bg-white/5 p-3 rounded-2xl group-hover:bg-white/10 transition-colors"><img src={app.icon} className="w-12 h-12 object-contain"/></div>
-                                        {isInstalled ? <div className="bg-green-500/10 text-green-400 p-1.5 rounded-full"><CheckCircle2 size={16}/></div> : <div className="bg-white/5 text-zinc-500 p-1.5 rounded-full group-hover:bg-blue-500 group-hover:text-white transition-colors"><Download size={16}/></div>}
+                       <div className="flex flex-col gap-4">
+                          {filteredApps.map(app => {
+                              const isInstalled = containers.some(c => c.image.includes(app.id));
+                              return (
+                                <div key={app.id} className="flex items-center justify-between bg-[#121212] border border-white/10 p-4 rounded-xl hover:bg-[#1a1a1a] transition-all shadow-md group" onClick={() => { setSelectedApp(app); setView('details'); }}>
+                                  <div className="flex items-center gap-4">
+                                    <img src={app.icon} className="w-12 h-12 rounded-lg bg-black/20 p-2 object-contain group-hover:scale-105 transition-transform" />
+                                    <div>
+                                      <div className="font-bold text-lg">{app.name}</div>
+                                      <div className="text-xs text-zinc-500">{app.desc}</div>
                                     </div>
-                                    <h3 className="font-bold text-lg mb-1 relative z-10">{app.name}</h3>
-                                    <p className="text-xs text-zinc-500 mb-4 line-clamp-2 h-8 relative z-10">{app.desc}</p>
+                                  </div>
+                                  <div>
+                                    {isInstalled ? ( <span className="text-green-400 text-xs font-bold">Installed</span> ) : (
+                                        <button onClick={(e) => { e.stopPropagation(); installApp(app.cmd, app.id); }} className="px-4 py-2 bg-blue-600 rounded-lg text-xs font-bold hover:bg-blue-500 transition">Install</button>
+                                    )}
+                                  </div>
                                 </div>
-                            )})}
+                              );
+                          })}
                         </div>
                      </>
                  ) : (
@@ -869,52 +1094,45 @@ function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
                                 <span className="px-3 py-1 rounded text-green-400">{containers.filter(c => c.isRunning).length} Running</span>
                             </div>
                         </div>
-                        <div className="grid grid-cols-1 xl:grid-cols-2 gap-4">
-                            {containers.length === 0 ? <div className="col-span-full text-zinc-500 flex flex-col items-center py-20"><Package size={48} className="mb-4 opacity-20"/>No apps installed.</div> : containers.map(c => (
-                                <div key={c.id} className={`flex items-center justify-between p-5 rounded-2xl border transition-all duration-300 ${c.isRunning ? 'bg-[#121212] border-white/5 shadow-lg' : 'bg-black/40 border-white/5 opacity-75 grayscale'}`}>
-                                    <div className="flex items-center gap-5 overflow-hidden">
+                        <div className="flex flex-col gap-4">
+                            {containers.length === 0 ? <div className="text-zinc-500 flex flex-col items-center py-20"><Package size={48} className="mb-4 opacity-20"/>No apps installed.</div> : containers.map(c => (
+                                <div key={c.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all duration-300 ${c.isRunning ? 'bg-[#121212] border-white/5 shadow-lg' : 'bg-black/40 border-white/5 opacity-75 grayscale'}`}>
+                                    <div className="flex items-center gap-4">
                                         <div className="relative">
-                                            <div className={`w-14 h-14 rounded-2xl flex items-center justify-center border border-white/5 ${c.isRunning ? 'bg-[#1a1a1a]' : 'bg-white/5'}`}>
-                                                <img src={getAppIcon(c)} className="w-8 h-8 object-contain opacity-90"/>
+                                            <div className={`w-12 h-12 rounded-lg flex items-center justify-center border border-white/5 ${c.isRunning ? 'bg-[#1a1a1a]' : 'bg-white/5'}`}>
+                                                <img src={getAppIcon(c)} className="w-7 h-7 object-contain opacity-90"/>
                                             </div>
-                                            <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full border-2 border-[#121212] flex items-center justify-center ${c.isRunning ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-zinc-600'}`}>
-                                                {c.isRunning && <div className="w-1.5 h-1.5 bg-white rounded-full animate-pulse"/>}
-                                            </div>
+                                            <div className={`absolute -bottom-1 -right-1 w-3 h-3 rounded-full border-2 border-[#121212] ${c.isRunning ? 'bg-green-500' : 'bg-zinc-600'}`}/>
                                         </div>
-                                        <div className="min-w-0">
-                                            <div className={`font-bold text-lg pr-4 overflow-hidden whitespace-nowrap mask-text-fade ${c.name.length > 20 ? 'max-w-[200px]' : ''}`}>{c.name.startsWith('/') ? c.name.substring(1) : c.name}</div>
-                                            <div className="text-xs text-zinc-500 font-mono mt-1 flex items-center gap-2">
-                                                <span className="truncate max-w-[150px] text-zinc-400" title={`Docker Image: ${c.image}`}>{c.image}</span>
-                                                {c.publicPort && <span className="bg-white/5 px-1.5 py-0.5 rounded text-zinc-400">:{c.publicPort}</span>}
+                                        <div>
+                                            <div className="font-bold text-base">{c.name.startsWith('/') ? c.name.substring(1) : c.name}</div>
+                                            <div className="text-xs text-zinc-500 font-mono flex items-center gap-2">
+                                                <span className="truncate max-w-[200px]">{c.image}</span>
+                                                {c.publicPort && <span className="bg-white/5 px-1.5 rounded text-zinc-400">:{c.publicPort}</span>}
                                             </div>
                                         </div>
                                     </div>
-                                    <div className="flex items-center gap-2 pl-4 border-l border-white/5">
+
+                                    <div className="flex items-center gap-2">
                                         {c.isRunning ? (
                                             <>
                                                 {c.publicPort && (
-                                                    <button onClick={() => openContainerInternal(c.publicPort, c.name)} className="h-10 px-4 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-blue-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2"
-                                                        onContextMenu={(e) => {
-                                                            e.preventDefault();
-                                                            // We cannot use window.confirm() due to iframe restrictions, so we'll use the alert placeholder logic
-                                                            const shouldOpenOs = window.prompt("Open in OS browser instead of inside simplifyOS? Type 'YES' to confirm.") === 'YES';
-                                                            if (shouldOpenOs) { openContainerOs(c.publicPort); }
-                                                        }}
-                                                    >
-                                                        OPEN <ExternalLink size={14}/>
+                                                    <button onClick={() => openContainerInternal(c.publicPort, c.name)} onContextMenu={(e) => { e.preventDefault(); const shouldOpenOs = window.prompt("Open in OS browser? Type 'YES'.") === 'YES'; if (shouldOpenOs) openContainerOs(c.publicPort); }} className="px-3 py-1.5 bg-blue-600/10 text-blue-400 hover:bg-blue-600 hover:text-white rounded-lg font-bold text-[10px] transition-all flex items-center gap-1.5 border border-blue-500/20 hover:border-blue-500">
+                                                        OPEN <ExternalLink size={12}/>
                                                     </button>
                                                 )}
-                                                <button onClick={() => toggleContainer(c.id, 'stop')} disabled={actioning === c.id} className="w-10 h-10 bg-yellow-500/10 text-yellow-400 rounded-xl hover:bg-yellow-500/20 transition-all border border-yellow-500/20 flex items-center justify-center hover:scale-105 active:scale-95" title="Stop">
-                                                    {actioning === c.id ? <Loader2 size={16} className="animate-spin"/> : <Square size={16} fill="currentColor"/>}
+                                                <button onClick={() => toggleContainer(c.id, 'stop')} disabled={actioning === c.id} className="p-2 bg-yellow-500/10 text-yellow-400 rounded-lg hover:bg-yellow-500/20 transition-all border border-yellow-500/20" title="Stop">
+                                                    {actioning === c.id ? <Loader2 size={14} className="animate-spin"/> : <Square size={14} fill="currentColor"/>}
                                                 </button>
                                             </>
                                         ) : (
-                                            <button onClick={() => toggleContainer(c.id, 'start')} disabled={actioning === c.id} className="h-10 px-6 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold text-xs shadow-lg shadow-green-500/20 transition-all hover:scale-105 active:scale-95 flex items-center gap-2">
-                                                {actioning === c.id ? <Loader2 size={16} className="animate-spin"/> : <><Play size={16} fill="currentColor"/> START</>}
+                                            <button onClick={() => toggleContainer(c.id, 'start')} disabled={actioning === c.id} className="px-3 py-1.5 bg-green-600/10 text-green-400 hover:bg-green-600 hover:text-white rounded-lg font-bold text-[10px] transition-all flex items-center gap-1.5 border border-green-500/20 hover:border-green-500">
+                                                {actioning === c.id ? <Loader2 size={12} className="animate-spin"/> : <><Play size={12} fill="currentColor"/> START</>}
                                             </button>
                                         )}
-                                        <button onClick={() => toggleContainer(c.id, 'rm -f')} disabled={actioning === c.id} className="w-10 h-10 bg-red-500/10 text-red-400 rounded-xl hover:bg-red-500/20 transition-all border border-red-500/20 flex items-center justify-center hover:scale-105 active:scale-95 group" title="Uninstall">
-                                            {actioning === c.id ? <Loader2 size={16} className="animate-spin"/> : <Trash2 size={18} className="group-hover:text-red-300"/>}
+                                        <button onClick={() => toggleContainer(c.id, "delete_full")
+} disabled={actioning === c.id} className="p-2 hover:bg-red-500/10 text-zinc-500 hover:text-red-400 rounded-lg transition-all" title="Uninstall">
+                                            {actioning === c.id ? <Loader2 size={14} className="animate-spin"/> : <Trash2 size={14}/>}
                                         </button>
                                     </div>
                                 </div>
@@ -925,7 +1143,7 @@ function AppStore({ serverUrl, isConnected, accent, onOpenUrl }) {
              </div>
         </div>
     );
-} 
+}
 
 function SettingsApp({ stats, setWallpaper, wallpapers, accent, setAccent, accents, onLogout, serverUrl, addWidget }) {
   const [tab, setTab] = useState('personalization');
@@ -956,7 +1174,7 @@ function SettingsApp({ stats, setWallpaper, wallpapers, accent, setAccent, accen
       };
       reader.readAsDataURL(file);
   };
-  
+
   return (
     <div className="flex h-full text-zinc-200 bg-[#09090b]">
        <div className="w-56 border-r border-white/5 p-4 bg-black/20">
@@ -1016,12 +1234,12 @@ function SettingsApp({ stats, setWallpaper, wallpapers, accent, setAccent, accen
   )
 }
 
-function TextEditor({ serverUrl, filePath, accent }) { 
+function TextEditor({ serverUrl, filePath, accent }) {
     const [content, setContent] = useState('');
     useEffect(() => { if (filePath) fetch(`${serverUrl}/api/files/view?path=${encodeURIComponent(filePath)}`).then(res => res.text()).then(setContent).catch(() => setContent("Error")); }, [filePath, serverUrl]);
     const saveFile = async () => { if (filePath) await fetch(`${serverUrl}/api/files/write`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path: filePath, content }) }); };
     return <div className="flex flex-col h-full bg-[#1e1e1e] text-white font-mono"><div className="h-10 bg-[#252526] flex items-center px-4 text-xs border-b border-black gap-3 select-none"><button onClick={saveFile} className="hover:text-blue-400 transition-colors"><Save size={14}/></button><span>{filePath}</span></div><textarea className="flex-1 bg-[#1e1e1e] text-[#d4d4d4] p-4 outline-none resize-none text-sm leading-relaxed" spellCheck={false} value={content} onChange={(e) => setContent(e.target.value)} /></div>
-} 
+}
 function TerminalApp({ serverUrl }) {
     const [history, setHistory] = useState([{ type: 'output', content: 'Terminal v1.0\nType "help" for commands.' }]);
     const [input, setInput] = useState('');
@@ -1031,10 +1249,133 @@ function TerminalApp({ serverUrl }) {
     return <div className="flex flex-col h-full bg-[#0c0c0c] text-[#cccccc] font-mono text-sm p-4"><div className="flex-1 overflow-y-auto scrollbar-hide">{history.map((l, i) => <div key={i} className="mb-1 break-words whitespace-pre-wrap">{l.type === 'input' ? <span className="text-emerald-500 font-bold">$ </span> : ''}{l.content}</div>)}<div ref={endRef} /></div><div className="flex items-center mt-2"><span className="text-emerald-500 mr-2 font-bold">$</span><input className="flex-1 bg-transparent outline-none text-[#cccccc]" value={input} onChange={e => setInput(e.target.value)} onKeyDown={handleCommand} autoFocus /></div></div>
 }
 function BrowserApp({ initialUrl }) {
-  const [url, setUrl] = useState(initialUrl || 'https://bing.com');
-  const [src, setSrc] = useState(url);
-  return <div className="flex flex-col h-full bg-white"><div className="h-10 bg-[#f1f1f1] flex items-center px-2 space-x-2 border-b border-gray-300"><div className="flex gap-1"><div className="w-3 h-3 rounded-full bg-gray-300"/><div className="w-3 h-3 rounded-full bg-gray-300"/></div><input className="flex-1 bg-white border border-gray-300 rounded-md px-3 py-1 text-xs text-black outline-none focus:border-blue-500 transition-colors shadow-sm" value={url} onChange={e => setUrl(e.target.value)} onKeyDown={e => e.key === 'Enter' && setSrc(url)} /></div><iframe src={src} className="flex-1 w-full border-none" sandbox="allow-same-origin allow-scripts allow-forms" /></div>
+  const NEWTAB_URL = "https://www.simplifyos.cloud/newtab.html";
+
+  const [tabs, setTabs] = useState([
+    { id: Date.now(), url: initialUrl || NEWTAB_URL, title: "New Tab" }
+  ]);
+
+  const [activeTab, setActiveTab] = useState(tabs[0].id);
+
+  const active = tabs.find(t => t.id === activeTab);
+
+  // --- Update tab URL ---
+  const updateUrl = (id, newUrl) => {
+    setTabs(prev =>
+      prev.map(t => (t.id === id ? { ...t, url: newUrl } : t))
+    );
+  };
+
+  // --- Add Tab ---
+  const addTab = () => {
+    const newId = Date.now();
+    const newTab = {
+      id: newId,
+      url: NEWTAB_URL,
+      title: "New Tab"
+    };
+    setTabs(prev => [...prev, newTab]);
+    setActiveTab(newId);
+  };
+
+  // --- Close Tab ---
+  const closeTab = (id) => {
+    if (tabs.length === 1) return;
+    const idx = tabs.findIndex(t => t.id === id);
+    const newTabs = tabs.filter(t => t.id !== id);
+
+    setTabs(newTabs);
+
+    if (activeTab === id) {
+      const next = newTabs[idx - 1] || newTabs[0];
+      setActiveTab(next.id);
+    }
+  };
+
+  // --- Load URL on Enter ---
+  const handleEnter = (e) => {
+    if (e.key === "Enter") {
+      // force iframe reload
+      updateUrl(active.id, active.url);
+    }
+  };
+
+  // --- Update tab title when iframe loads ---
+  const handleIframeLoad = (e) => {
+    try {
+      const title = e.target.contentDocument.title;
+      setTabs(prev =>
+        prev.map(t =>
+          t.id === active.id ? { ...t, title: title || "Tab" } : t
+        )
+      );
+    } catch {
+      // Cross-origin: give generic title
+      setTabs(prev =>
+        prev.map(t =>
+          t.id === active.id ? { ...t, title: active.url } : t
+        )
+      );
+    }
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-[#0d0d0d] text-white">
+
+      {/* TAB BAR */}
+      <div className="h-10 bg-[#1a1a1a] border-b border-black flex items-center px-2 gap-2 overflow-x-auto">
+        {tabs.map(t => (
+          <div
+            key={t.id}
+            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all
+             ${t.id === activeTab ? "bg-[#2a2a2a] text-white" : "bg-[#111] text-zinc-400 hover:bg-[#222]"}
+            `}
+            onClick={() => setActiveTab(t.id)}
+          >
+            <span className="text-sm truncate max-w-[120px]">{t.title}</span>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                closeTab(t.id);
+              }}
+              className="hover:text-red-400 transition"
+            >
+              ✕
+            </button>
+          </div>
+        ))}
+
+        <button
+          onClick={addTab}
+          className="ml-2 bg-[#222] text-zinc-300 hover:bg-[#333] px-2 py-1 rounded-lg"
+        >
+          +
+        </button>
+      </div>
+
+      {/* URL BAR */}
+      <div className="h-10 bg-[#111] flex items-center px-3 border-b border-black">
+        <input
+          value={active.url}
+          onChange={(e) => updateUrl(active.id, e.target.value)}
+          onKeyDown={handleEnter}
+          className="flex-1 bg-[#0a0a0a] border border-[#333] rounded-lg px-3 py-1 text-sm outline-none text-white placeholder-zinc-500"
+        />
+      </div>
+
+      {/* WEBVIEW */}
+      <iframe
+        key={active.id}
+        src={active.url}
+        onLoad={handleIframeLoad}
+        className="flex-1 w-full"
+        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
+      />
+    </div>
+  );
 }
+
+
 function FilePreviewModal({ file, serverUrl, onClose }) {
   const downloadUrl = `${serverUrl}/api/files/view?path=${encodeURIComponent(file.path)}`;
   const isImg = ['jpg','jpeg','png','gif','webp'].some(e => file.name.toLowerCase().endsWith(e));
@@ -1049,10 +1390,10 @@ function Dock({ openApp, accent, activeWindows, minimizeWindow, restoreWindow })
         {[{id:'files', icon:<HardDrive className={accent.text}/>}, {id:'browser', icon:<Globe className="text-blue-400"/>}, {id:'appcenter', icon:<LayoutGrid className="text-violet-400"/>}, {id:'settings', icon:<Settings className="text-zinc-300"/>}, {id:'terminal', icon:<Terminal className="text-emerald-400"/>}].map(app => {
             const isOpen = activeWindows.some(w => w.component === (app.id === 'files' ? 'files' : app.id === 'browser' ? 'browser' : app.id === 'appcenter' ? 'appcenter' : app.id === 'settings' ? 'settings' : 'terminal'));
             const isMinimized = activeWindows.some(w => w.component === (app.id === 'files' ? 'files' : app.id === 'browser' ? 'browser' : app.id === 'appcenter' ? 'appcenter' : app.id === 'settings' ? 'settings' : 'terminal') && w.isMinimized);
-            
+
             return (
-                <button 
-                    key={app.id} 
+                <button
+                    key={app.id}
                     onClick={() => {
                         if (isOpen && isMinimized) {
                             const win = activeWindows.find(w => w.component === (app.id === 'files' ? 'files' : app.id === 'browser' ? 'browser' : app.id === 'appcenter' ? 'appcenter' : app.id === 'settings' ? 'settings' : 'terminal'));
@@ -1060,7 +1401,7 @@ function Dock({ openApp, accent, activeWindows, minimizeWindow, restoreWindow })
                         } else {
                             openApp(app.id, app.id.charAt(0).toUpperCase() + app.id.slice(1), app.id);
                         }
-                    }} 
+                    }}
                     className="w-12 h-12 bg-white/5 rounded-2xl flex items-center justify-center hover:-translate-y-4 transition-all duration-300 hover:bg-white/10 hover:scale-110 shadow-lg relative group"
                 >
                     {React.cloneElement(app.icon, {size: 24})}
@@ -1081,7 +1422,7 @@ export default function App() {
   const [serverUrl, setServerUrl] = useState("");
   const [bootStatus, setBootStatus] = useState("Initializing...");
   const [ready, setReady] = useState(false);
-  
+
   const [wallpaper, setWallpaper] = useState(() => localStorage.getItem('simplify_wallpaper') || DEFAULT_WALLPAPER);
   const [accent, setAccent] = useState(() => JSON.parse(localStorage.getItem('simplify_accent') || JSON.stringify(ACCENTS[0])));
   const [desktopItems, setDesktopItems] = useState(() => JSON.parse(localStorage.getItem('simplify_desktop') || '[]'));
@@ -1092,7 +1433,7 @@ export default function App() {
   const [activeWindowId, setActiveWindowId] = useState(null);
   const [contextMenu, setContextMenu] = useState(null);
   const [fileToOpen, setFileToOpen] = useState(null);
-  const [modal, setModal] = useState(null); 
+  const [modal, setModal] = useState(null);
   const [clipboard, setClipboard] = useState(null);
 
   useEffect(() => localStorage.setItem('simplify_wallpaper', wallpaper), [wallpaper]);
@@ -1105,7 +1446,7 @@ export default function App() {
       const cachedUser = localStorage.getItem('simplify_user');
       const urlToUse = cachedUrl || `http://${window.location.hostname}:3001`;
       setServerUrl(urlToUse);
-      
+
       fetch(`${urlToUse}/api/settings`)
         .then(res => res.json())
         .then(data => {
@@ -1169,27 +1510,27 @@ export default function App() {
   }, [wallpaper, accent, desktopItems, widgets, serverUrl, isConnected, isLoggedIn]);
 
   const openApp = (id, title, component, props = {}) => {
-    const existing = windows.find(w => w.id === id || (w.component === component && !['texteditor','browser','files'].includes(component))); 
-    
+    const existing = windows.find(w => w.id === id || (w.component === component && !['texteditor','browser','files'].includes(component)));
+
     // If app is already open, check if minimized
-    if (existing) { 
+    if (existing) {
         if (existing.isMinimized) {
             restoreWindow(existing.id);
         } else {
-            setActiveWindowId(existing.id); 
+            setActiveWindowId(existing.id);
         }
-        return; 
+        return;
     }
-    
-    const newWin = { 
-      id: id || Date.now(), 
-      title, 
-      component, 
-      props, 
-      zIndex: windows.length + 1, 
-      x: 100 + (windows.length * 30), 
+
+    const newWin = {
+      id: id || Date.now(),
+      title,
+      component,
+      props,
+      zIndex: windows.length + 1,
+      x: 100 + (windows.length * 30),
       y: 80 + (windows.length * 30),
-      width: 1000, 
+      width: 1000,
       height: 650,
       isMinimized: false,
       isMaximized: false
@@ -1199,9 +1540,9 @@ export default function App() {
   };
 
   const closeWindow = (id) => setWindows(prev => prev.filter(w => w.id !== id));
-  
+
   const minimizeWindow = (id) => {
-    setWindows(prev => prev.map(w => 
+    setWindows(prev => prev.map(w =>
         w.id === id ? { ...w, isMinimized: true } : w
     ));
     // Focus next window
@@ -1211,7 +1552,7 @@ export default function App() {
   };
 
   const restoreWindow = (id) => {
-      setWindows(prev => prev.map(w => 
+      setWindows(prev => prev.map(w =>
           w.id === id ? { ...w, isMinimized: false } : w
       ));
       setActiveWindowId(id);
@@ -1270,8 +1611,8 @@ export default function App() {
   const handleFileOpen = (file) => {
       const ext = file.name.split('.').pop().toLowerCase();
       const fileUrl = `${serverUrl}/api/files/view?path=${encodeURIComponent(file.path)}`;
-      if (['html', 'htm'].includes(ext)) openApp('browser-' + file.path, file.name, 'browser', { initialUrl: fileUrl }); 
-      else if (['txt', 'js', 'json', 'md', 'css', 'py', 'yml', 'log', 'sh'].includes(ext)) openApp('editor-' + file.path, file.name, 'texteditor', { filePath: file.path }); 
+      if (['html', 'htm'].includes(ext)) openApp('browser-' + file.path, file.name, 'browser', { initialUrl: fileUrl });
+      else if (['txt', 'js', 'json', 'md', 'css', 'py', 'yml', 'log', 'sh'].includes(ext)) openApp('editor-' + file.path, file.name, 'texteditor', { filePath: file.path });
       else setFileToOpen(file);
   };
 
@@ -1288,10 +1629,10 @@ export default function App() {
       if (!clipboard) return;
       try {
           const endpoint = clipboard.type === 'cut' ? 'move' : 'copy';
-          await fetch(`${serverUrl}/api/files/${endpoint}`, { 
-              method: 'POST', 
-              headers: {'Content-Type': 'application/json'}, 
-              body: JSON.stringify({ sourcePath: clipboard.path, destPath }) 
+          await fetch(`${serverUrl}/api/files/${endpoint}`, {
+              method: 'POST',
+              headers: {'Content-Type': 'application/json'},
+              body: JSON.stringify({ sourcePath: clipboard.path, destPath })
           });
           if (clipboard.type === 'cut') setClipboard(null);
           setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w));
@@ -1321,11 +1662,11 @@ export default function App() {
         {widgets.map(widget => <DesktopWidget key={widget.id} widget={widget} stats={stats} onMove={moveWidget} onRemove={removeWidget} />)}
       </div>
       {windows.map(w => (
-        <Window 
-            key={w.id} 
-            config={w} 
-            isActive={activeWindowId === w.id} 
-            onFocus={() => setActiveWindowId(w.id)} 
+        <Window
+            key={w.id}
+            config={w}
+            isActive={activeWindowId === w.id}
+            onFocus={() => setActiveWindowId(w.id)}
             onClose={() => closeWindow(w.id)}
             onMinimize={() => minimizeWindow(w.id)}
             onMaximize={maximizeWindow}
@@ -1342,7 +1683,7 @@ export default function App() {
           </ErrorBoundary>
         </Window>
       ))}
-      {contextMenu && <ContextMenu {...contextMenu} clipboard={clipboard} onAction={(action, data, path) => { if(action === 'open') handleFileOpen(data); if(action === 'rename') setModal({ type: 'rename', data }); if(action === 'delete') handleDelete(data.path); if(action === 'copy') handleCopy(data.path, 'copy'); if(action === 'cut') handleCopy(data.path, 'cut'); if(action === 'paste') handlePaste(path || data?.path); if(action === 'new_folder') setModal({ type: 'create', itemType: 'folder', path }); if(action === 'new_file') setModal({ type: 'create', itemType: 'file', path }); if(action === 'settings') openApp('settings', 'Settings', 'settings'); setContextMenu(null); }} />}
+      {contextMenu && <ContextMenu {...contextMenu} clipboard={clipboard} onAction={(action, data, path) => { if(action === 'open') handleFileOpen(data); if(action === 'rename') setModal({ type: 'rename', data }); if(action === 'delete') handleDelete(data.path); if(action === 'copy') handleCopy(data.path, 'copy'); if(action === 'cut') handleCopy(data.path, 'cut'); if(action === 'paste') handlePaste(contextMenu.path); if(action === 'new_folder') setModal({ type: 'create', itemType: 'folder', path }); if(action === 'new_file') setModal({ type: 'create', itemType: 'file', path }); if(action === 'settings') openApp('settings', 'Settings', 'settings'); setContextMenu(null); }} />}
       {fileToOpen && <FilePreviewModal file={fileToOpen} serverUrl={serverUrl} onClose={() => setFileToOpen(null)} />}
       {modal && <InputModal type={modal.type} data={modal.data} itemType={modal.itemType} onClose={() => setModal(null)} onConfirm={handleRename} onCreate={(val, type) => handleCreate(val, type, modal.path || '')} accent={accent} />}
       <Dock openApp={openApp} accent={accent} activeWindows={windows} minimizeWindow={minimizeWindow} restoreWindow={restoreWindow} />
