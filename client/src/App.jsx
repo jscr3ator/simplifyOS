@@ -12,7 +12,7 @@ import {
   Scissors, Copy, Clipboard, Link, ChevronDown, CheckCircle2, XCircle, Loader2,
   AlertTriangle, WifiOff, Network, Info, Shield, Eye, EyeOff, ArrowLeft, ArrowRight, Bookmark,
   Database, ShieldCheck, Zap, Upload, Package, Gauge, Calendar, StickyNote, MoveUp,
-  MessageSquare, Gamepad2, Radio
+  MessageSquare, Gamepad2, Radio, Tv, Layers
 } from 'lucide-react';
 
 const DEFAULT_WALLPAPER = "https://www.simplifyos.cloud/wallpaper.png";
@@ -60,9 +60,7 @@ const ACCENTS = [
   { name: "Amber", class: "text-amber-500", bg: "bg-amber-500", border: "border-amber-500/50", glow: "shadow-amber-500/20" },
 ];
 
-// Extensive list of preset apps with correct Docker images and Icons
-// Extensive list of preset apps with correct Docker images and Icons
-// Icons sourced from the excellent walkxcode/dashboard-icons repository for consistency
+// Robust list of self-hosted apps
 const PRESET_APPS = [
     // --- Media ---
     {
@@ -82,12 +80,20 @@ const PRESET_APPS = [
         cmd: 'docker run -d --name=jellyfin -p 8096:8096 -p 7359:7359/udp -v /docker/jellyfin/config:/config -v /docker/jellyfin/cache:/cache -v /docker/media:/media --restart unless-stopped jellyfin/jellyfin'
     },
     {
-        id: 'tautulli',
-        name: 'Tautulli',
+        id: 'overseerr',
+        name: 'Overseerr',
         category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tautulli.png',
-        desc: 'Monitor Plex usage and statistics.',
-        cmd: 'docker run -d --name=tautulli -e PUID=1000 -e PGID=1000 -p 8181:8181 -v /docker/tautulli/config:/config --restart unless-stopped lscr.io/linuxserver/tautulli:latest'
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/overseerr.png',
+        desc: 'Request management and media discovery for Plex.',
+        cmd: 'docker run -d --name=overseerr -e PUID=1000 -e PGID=1000 -p 5055:5055 -v /docker/overseerr/config:/config --restart unless-stopped lscr.io/linuxserver/overseerr:latest'
+    },
+    {
+        id: 'jellyseerr',
+        name: 'Jellyseerr',
+        category: 'Media',
+        icon: 'https://raw.githubusercontent.com/Fallenbagel/jellyseerr/main/public/logo_full.png',
+        desc: 'Request management for Jellyfin & Emby.',
+        cmd: 'docker run -d --name=jellyseerr -e PUID=1000 -e PGID=1000 -p 5056:5055 -v /docker/jellyseerr/config:/app/config --restart unless-stopped fallenbagel/jellyseerr:latest'
     },
     {
         id: 'sonarr',
@@ -106,20 +112,12 @@ const PRESET_APPS = [
         cmd: 'docker run -d --name=radarr -e PUID=1000 -e PGID=1000 -p 7878:7878 -v /docker/radarr/config:/config -v /docker/media/movies:/movies -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/radarr:latest'
     },
     {
-        id: 'lidarr',
-        name: 'Lidarr',
+        id: 'bazarr',
+        name: 'Bazarr',
         category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/lidarr.png',
-        desc: 'Music library manager.',
-        cmd: 'docker run -d --name=lidarr -e PUID=1000 -e PGID=1000 -p 8686:8686 -v /docker/lidarr/config:/config -v /docker/media/music:/music -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/lidarr:latest'
-    },
-    {
-        id: 'readarr',
-        name: 'Readarr',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/readarr.png',
-        desc: 'Book manager & automation.',
-        cmd: 'docker run -d --name=readarr -e PUID=1000 -e PGID=1000 -p 8787:8787 -v /docker/readarr/config:/config -v /docker/media/books:/books -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/readarr:develop'
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png',
+        desc: 'Subtitle manager for Sonarr and Radarr.',
+        cmd: 'docker run -d --name=bazarr -e PUID=1000 -e PGID=1000 -p 6767:6767 -v /docker/bazarr/config:/config -v /docker/media/movies:/movies -v /docker/media/tv:/tv --restart unless-stopped lscr.io/linuxserver/bazarr:latest'
     },
     {
         id: 'prowlarr',
@@ -128,6 +126,14 @@ const PRESET_APPS = [
         icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png',
         desc: 'Indexer manager / proxy.',
         cmd: 'docker run -d --name=prowlarr -e PUID=1000 -e PGID=1000 -p 9696:9696 -v /docker/prowlarr/config:/config --restart unless-stopped lscr.io/linuxserver/prowlarr:latest'
+    },
+    {
+        id: 'sabnzbd',
+        name: 'SABnzbd',
+        category: 'Media',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sabnzbd.png',
+        desc: 'Free open-source binary newsreader.',
+        cmd: 'docker run -d --name=sabnzbd -e PUID=1000 -e PGID=1000 -p 8085:8080 -v /docker/sabnzbd/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/sabnzbd:latest'
     },
     {
         id: 'transmission',
@@ -143,23 +149,7 @@ const PRESET_APPS = [
         category: 'Media',
         icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png',
         desc: 'Powerful torrent client.',
-        cmd: 'docker run -d --name=qbittorrent -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -e WEBUI_PORT=8080 -p 8080:8080 -p 6881:6881 -p 6881:6881/udp -v /docker/qbittorrent/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/qbittorrent:latest'
-    },
-    {
-        id: 'stremthru',
-        name: 'StremThru',
-        category: 'Media',
-        icon: 'https://raw.githubusercontent.com/MunifTanjim/stremthru/main/assets/logo.png',
-        desc: 'Companion for Stremio.',
-        cmd: 'docker run -d --name=stremthru -p 8080:8080 muniftanjim/stremthru:latest'
-    },
-    {
-        id: 'aiostreams',
-        name: 'AIOStreams',
-        category: 'Media',
-        icon: 'https://cdn-icons-png.flaticon.com/512/2989/2989835.png',
-        desc: 'All-in-one Stremio streams.',
-        cmd: 'docker run -d --name=aiostreams -p 3000:3000 -e SECRET_KEY=CHANGEME viren070/aiostreams:latest'
+        cmd: 'docker run -d --name=qbittorrent -e PUID=1000 -e PGID=1000 -e WEBUI_PORT=8080 -p 8080:8080 -p 6881:6881 -p 6881:6881/udp -v /docker/qbittorrent/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/qbittorrent:latest'
     },
 
     // --- Home & Automation ---
@@ -188,14 +178,6 @@ const PRESET_APPS = [
         cmd: 'docker run -d --name=mosquitto -p 1883:1883 -p 9001:9001 -v /docker/mosquitto/config:/mosquitto/config -v /docker/mosquitto/data:/mosquitto/data -v /docker/mosquitto/log:/mosquitto/log --restart unless-stopped eclipse-mosquitto'
     },
     {
-        id: 'zigbee2mqtt',
-        name: 'Zigbee2MQTT',
-        category: 'Home',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/zigbee2mqtt.png',
-        desc: 'Zigbee to MQTT bridge.',
-        cmd: 'docker run -d --name=zigbee2mqtt --device=/dev/ttyUSB0:/dev/ttyUSB0 -p 8080:8080 -v /docker/zigbee2mqtt/data:/app/data -v /run/udev:/run/udev:ro --restart unless-stopped koenkk/zigbee2mqtt'
-    },
-    {
         id: 'homebridge',
         name: 'Homebridge',
         category: 'Home',
@@ -219,7 +201,7 @@ const PRESET_APPS = [
         category: 'Network',
         icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/pi-hole.png',
         desc: 'Network-wide ad blocking.',
-        cmd: 'docker run -d --name=pihole -p 53:53/tcp -p 53:53/udp -p 80:80 -e TZ=America/Los_Angeles -v /docker/pihole/etc-pihole:/etc/pihole -v /docker/pihole/dnsmasq.d:/etc/dnsmasq.d --cap-add=NET_ADMIN --restart unless-stopped pihole/pihole'
+        cmd: 'docker run -d --name=pihole -p 53:53/tcp -p 53:53/udp -p 8081:80 -e TZ=America/Los_Angeles -v /docker/pihole/etc-pihole:/etc/pihole -v /docker/pihole/dnsmasq.d:/etc/dnsmasq.d --cap-add=NET_ADMIN --restart unless-stopped pihole/pihole'
     },
     {
         id: 'adguard',
@@ -238,14 +220,6 @@ const PRESET_APPS = [
         cmd: 'docker run -d --name=npm -p 80:80 -p 81:81 -p 443:443 -v /docker/npm/data:/data -v /docker/npm/letsencrypt:/etc/letsencrypt --restart unless-stopped jc21/nginx-proxy-manager:latest'
     },
     {
-        id: 'wireguard',
-        name: 'WireGuard',
-        category: 'Network',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/wireguard.png',
-        desc: 'Fast, modern VPN.',
-        cmd: 'docker run -d --name=wireguard --cap-add=NET_ADMIN --cap-add=SYS_MODULE -e PUID=1000 -e PGID=1000 -p 51820:51820/udp -v /docker/wireguard/config:/config -v /lib/modules:/lib/modules --sysctl net.ipv4.conf.all.src_valid_mark=1 --restart unless-stopped lscr.io/linuxserver/wireguard'
-    },
-    {
         id: 'tailscale',
         name: 'Tailscale',
         category: 'Network',
@@ -253,16 +227,16 @@ const PRESET_APPS = [
         desc: 'Zero-config mesh VPN.',
         cmd: 'docker run -d --name=tailscale --net=host --privileged -v /dev/net/tun:/dev/net/tun -v /docker/tailscale:/var/lib/tailscale -e TS_AUTHKEY=YOURKEY tailscale/tailscale'
     },
-    {
-        id: 'cloudflared',
-        name: 'Cloudflared',
-        category: 'Network',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/cloudflare.png',
-        desc: 'Cloudflare Tunnel.',
-        cmd: 'docker run -d --name=cloudflared cloudflare/cloudflared:latest tunnel --no-autoupdate run --token YOURTOKEN'
-    },
 
     // --- Monitoring ---
+    {
+        id: 'heimdall',
+        name: 'Heimdall',
+        category: 'Monitoring',
+        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/heimdall.png',
+        desc: 'Application dashboard.',
+        cmd: 'docker run -d --name=heimdall -e PUID=1000 -e PGID=1000 -p 8088:80 -p 4443:443 -v /docker/heimdall/config:/config --restart unless-stopped lscr.io/linuxserver/heimdall:latest'
+    },
     {
         id: 'portainer',
         name: 'Portainer',
@@ -287,22 +261,6 @@ const PRESET_APPS = [
         desc: 'System monitoring.',
         cmd: 'docker run -d --name=glances -p 61208:61208 -e GLANCES_OPT="-w" -v /var/run/docker.sock:/var/run/docker.sock:ro --pid host --restart always nicolargo/glances'
     },
-    {
-        id: 'grafana',
-        name: 'Grafana',
-        category: 'Monitoring',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/grafana.png',
-        desc: 'Metrics dashboarding.',
-        cmd: 'docker run -d --name=grafana -p 3000:3000 -v /docker/grafana:/var/lib/grafana --restart unless-stopped grafana/grafana'
-    },
-    {
-        id: 'prometheus',
-        name: 'Prometheus',
-        category: 'Monitoring',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prometheus.png',
-        desc: 'Time-series metrics system.',
-        cmd: 'docker run -d --name=prometheus -p 9090:9090 -v /docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml --restart unless-stopped prom/prometheus'
-    },
 
     // --- Productivity ---
     {
@@ -322,20 +280,12 @@ const PRESET_APPS = [
         cmd: 'docker run -d --name=syncthing -p 8384:8384 -p 22000:22000/tcp -p 22000:22000/udp -p 21027:21027/udp -v /docker/syncthing:/var/syncthing --restart unless-stopped linuxserver/syncthing'
     },
     {
-        id: 'photoprism',
-        name: 'PhotoPrism',
-        category: 'Productivity',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/photoprism.png',
-        desc: 'AI-powered photo manager.',
-        cmd: 'docker run -d --name=photoprism -p 2342:2342 -v /docker/photoprism/originals:/photoprism/originals -v /docker/photoprism/storage:/photoprism/storage -e PHOTOPRISM_ADMIN_PASSWORD=admin --restart unless-stopped photoprism/photoprism'
-    },
-    {
         id: 'filebrowser',
         name: 'FileBrowser',
         category: 'Productivity',
         icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/filebrowser.png',
         desc: 'Web-based file manager.',
-        cmd: 'docker run -d --name=filebrowser -p 8081:80 -v /docker/files:/srv filebrowser/filebrowser'
+        cmd: 'docker run -d --name=filebrowser -p 8082:80 -v /docker/files:/srv filebrowser/filebrowser'
     },
     {
         id: 'vaultwarden',
@@ -343,15 +293,7 @@ const PRESET_APPS = [
         category: 'Productivity',
         icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vaultwarden.png',
         desc: 'Self-hosted password manager.',
-        cmd: 'docker run -d --name=vaultwarden -p 80:80 -p 3012:3012 -v /docker/vaultwarden:/data -e WEBSOCKET_ENABLED=true --restart unless-stopped vaultwarden/server:latest'
-    },
-    {
-        id: 'ghost',
-        name: 'Ghost',
-        category: 'Productivity',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/ghost.png',
-        desc: 'Blogging platform.',
-        cmd: 'docker run -d --name=ghost -p 2368:2368 -e url=http://localhost:2368 -v /docker/ghost/content:/var/lib/ghost/content --restart unless-stopped ghost:latest'
+        cmd: 'docker run -d --name=vaultwarden -p 3012:80 -v /docker/vaultwarden:/data --restart unless-stopped vaultwarden/server:latest'
     },
 
     // --- Gaming ---
@@ -372,16 +314,6 @@ const WALLPAPERS = [
   { name: "Glacier", url: "https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?q=80&w=2071&auto=format&fit=crop" },
   { name: "Desert", url: "https://images.unsplash.com/photo-1682687982501-1e58ab814714?q=80&w=2670&auto=format&fit=crop" },
   { name: "Neon", url: "https://images.unsplash.com/photo-1550751827-4bd374c3f58b?q=80&w=2670&auto=format&fit=crop" },
-  { name: "Sierra", url: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?q=80&w=2000&auto=format&fit=crop" },
-  { name: "Cyber", url: "https://images.unsplash.com/photo-1515630278258-407f66498911?q=80&w=2000&auto=format&fit=crop" },
-  { name: "Abstract", url: "https://images.unsplash.com/photo-1541701494587-cb58502866ab?q=80&w=2000&auto=format&fit=crop" },
-  { name: "Japan", url: "https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?q=80&w=2000&auto=format&fit=crop" },
-  { name: "City", url: "https://images.unsplash.com/photo-1477959858617-67f85cf4f1df?q=80&w=2000&auto=format&fit=crop" },
-  { name: "Space", url: "https://images.squarespace-cdn.com/content/v1/5fe4caeadae61a2f19719512/1609959391058-Z8ZR2WU02Y7BSTVISRV0/Spaceman" },
-  { name: "Car", url: "https://motionbgs.com/media/660/bmw-carros-driving.jpg" },
-  { name: "MacOS", url: "https://images.unsplash.com/photo-1620121692029-d088224ddc74?fm=jpg&q=60&w=3000&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8bWFjJTIwb3MlMjB3YWxscGFwZXJ8ZW58MHx8MHx8fDA%3D" },
-  { name: "Windows", url: "https://blogs.windows.com/wp-content/uploads/sites/2/2021/10/Windows-11-Bloom-Screensaver-Dark-scaled.jpg" },
-  { name: "Linux", url: "https://cdn.wallpapersafari.com/92/90/CsKwS8.png" },
   { name: "SimplifyOS", url: "https://www.simplifyos.cloud/wallpaper.png" },
 ];
 
@@ -541,12 +473,11 @@ function TopBar({ stats, isConnected, deviceName, accent }) {
   const diskFree = Math.max(0, diskTotal - diskUsed);
   const diskFreeStr = formatBytes(diskFree);
   const cpuLoad = Math.round(stats?.cpu?.load || 0);
-  const displayName = "simplifyOS"
 
   return (
     <div className="absolute top-6 left-0 right-0 flex justify-center z-50 pointer-events-none">
       <div className="glass-bar px-6 py-2 rounded-full shadow-2xl flex items-center gap-6 pointer-events-auto hover:bg-black/40 transition-all">
-        <div className="flex items-center gap-2"><div className={`p-1 rounded-full ${isConnected ? 'bg-green-500/20' : 'bg-red-500/20'}`}><Server className={`w-3 h-3 ${isConnected ? 'text-green-400' : 'text-red-400'}`} /></div><span className="text-xs font-bold text-white/90">{displayName}</span></div>
+        <div className="flex items-center gap-2"><div className={`p-1 rounded-full ${isConnected ? 'bg-green-500/20' : 'bg-red-500/20'}`}><Server className={`w-3 h-3 ${isConnected ? 'text-green-400' : 'text-red-400'}`} /></div><span className="text-xs font-bold text-white/90">simplifyOS</span></div>
         {isConnected && <>
             <div className="w-px h-4 bg-white/10" />
             <div className="flex items-center gap-4 text-[10px] font-mono text-zinc-400">
@@ -565,24 +496,17 @@ function Window({ config, children, isActive, onFocus, onClose, onMinimize, onMa
   const windowRef = useRef(null);
   const [pos, setPos] = useState({ x: config.x, y: config.y });
   const [size, setSize] = useState({ w: config.width || 900, h: config.height || 600 });
-
-  // State to disable CSS transitions while dragging for instant movement
   const [isDraggingState, setIsDraggingState] = useState(false);
-
-  // Refs for dragging to avoid re-renders
   const dragStart = useRef({ x: 0, y: 0 });
   const initialPos = useRef({ x: 0, y: 0 });
   const isDragging = useRef(false);
 
   const handleMouseDown = (e) => {
     if (isMaximized || e.target.closest('button') || e.target.closest('.resize-handle')) return;
-
     isDragging.current = true;
-    setIsDraggingState(true); // Disable transitions immediately
-
+    setIsDraggingState(true);
     dragStart.current = { x: e.clientX, y: e.clientY };
     initialPos.current = { x: pos.x, y: pos.y };
-
     onFocus();
     document.body.style.userSelect = 'none';
     window.addEventListener('mousemove', handleMouseMove);
@@ -591,30 +515,22 @@ function Window({ config, children, isActive, onFocus, onClose, onMinimize, onMa
 
   const handleMouseMove = (e) => {
     if (!isDragging.current) return;
-
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
-
-    const newX = initialPos.current.x + dx;
-    const newY = initialPos.current.y + dy;
-
     if (windowRef.current) {
-        windowRef.current.style.left = `${newX}px`;
-        windowRef.current.style.top = `${newY}px`;
+        windowRef.current.style.left = `${initialPos.current.x + dx}px`;
+        windowRef.current.style.top = `${initialPos.current.y + dy}px`;
     }
   };
 
   const handleMouseUp = (e) => {
     if (!isDragging.current) return;
-
     isDragging.current = false;
-    setIsDraggingState(false); // Re-enable transitions
+    setIsDraggingState(false);
     document.body.style.userSelect = '';
-
     const dx = e.clientX - dragStart.current.x;
     const dy = e.clientY - dragStart.current.y;
     setPos({ x: initialPos.current.x + dx, y: initialPos.current.y + dy });
-
     window.removeEventListener('mousemove', handleMouseMove);
     window.removeEventListener('mouseup', handleMouseUp);
   };
@@ -628,7 +544,6 @@ function Window({ config, children, isActive, onFocus, onClose, onMinimize, onMa
   return (
     <div
       ref={windowRef}
-      // Added logic: if dragging, use transition-none, otherwise use transition-all
       className={`absolute flex flex-col glass-panel rounded-xl overflow-hidden shadow-2xl ${isDraggingState ? 'transition-none' : 'transition-all duration-200'} ${isActive ? 'z-50 ring-1 ring-white/10' : 'z-10 opacity-90 scale-[0.99] grayscale-[0.2]'}`}
       style={windowStyle}
       onMouseDown={handleMouseDown}
@@ -659,7 +574,6 @@ function DesktopWidget({ widget, stats, onMove, onRemove }) {
     const [time, setTime] = useState(new Date());
     useEffect(() => { if (widget.type === 'clock') { const t = setInterval(() => setTime(new Date()), 1000); return () => clearInterval(t); } }, [widget.type]);
     useEffect(() => { const handleMove = (e) => { if (!dragging) return; setPos({ x: e.clientX - offset.current.x, y: e.clientY - offset.current.y }); }; const handleUp = () => { if (dragging) { setDragging(false); onMove(widget.id, pos.x, pos.y); } }; window.addEventListener('mousemove', handleMove); window.addEventListener('mouseup', handleUp); return () => { window.removeEventListener('mousemove', handleMove); window.removeEventListener('mouseup', handleUp); } }, [dragging]);
-
     const diskTotal = stats?.storage?.total || 1;
     const diskUsed = stats?.storage?.used || 0;
 
@@ -677,18 +591,8 @@ function DesktopWidget({ widget, stats, onMove, onRemove }) {
 function ContextMenu({ x, y, type, data, onAction }) {
     return (
         <div className="absolute z-[9999] w-56 bg-[#1a1a1a]/95 backdrop-blur-2xl border border-white/10 rounded-xl shadow-2xl py-1.5 animate-in fade-in zoom-in-95 duration-100" style={{ left: x, top: y }}>
-          {(type === 'desktop' || type === 'folder') && <>
-  <button onClick={() => onAction('new_folder')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Folder size={14}/> New Folder</button>
-  <button onClick={() => onAction('new_file')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><FileText size={14}/> New File</button>
-  <div className="h-px bg-white/10 my-1 mx-2"/>
-  <button onClick={() => onAction('settings')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Settings size={14}/> Settings</button>
-  <button onClick={() => onAction('paste')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3 text-blue-400"><Clipboard size={14}/> Paste Here</button>
-</>}
-
-
-            {type === 'file' && <><div className="px-4 py-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-white/10 mb-1 max-w-[180px] truncate">{data.name}</div><button onClick={() => onAction('open', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Open</button><button onClick={() => onAction('copy', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Copy</button>
-<button onClick={() => onAction('cut', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Cut</button>
-<button onClick={() => onAction('rename', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Rename</button><div className="h-px bg-white/10 my-1 mx-2"/><button onClick={() => onAction('delete', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-red-500/20 text-red-400 transition-colors">Delete</button></>}
+          {(type === 'desktop' || type === 'folder') && <><button onClick={() => onAction('new_folder')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Folder size={14}/> New Folder</button><button onClick={() => onAction('new_file')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><FileText size={14}/> New File</button><div className="h-px bg-white/10 my-1 mx-2"/><button onClick={() => onAction('settings')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3"><Settings size={14}/> Settings</button><button onClick={() => onAction('paste')} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors flex items-center gap-3 text-blue-400"><Clipboard size={14}/> Paste Here</button></>}
+            {type === 'file' && <><div className="px-4 py-1.5 text-[10px] text-zinc-500 font-bold uppercase tracking-wider border-b border-white/10 mb-1 max-w-[180px] truncate">{data.name}</div><button onClick={() => onAction('open', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Open</button><button onClick={() => onAction('copy', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Copy</button><button onClick={() => onAction('cut', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Cut</button><button onClick={() => onAction('rename', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-white/10 transition-colors">Rename</button><div className="h-px bg-white/10 my-1 mx-2"/><button onClick={() => onAction('delete', data)} className="w-full text-left px-4 py-2 text-xs hover:bg-red-500/20 text-red-400 transition-colors">Delete</button></>}
         </div>
     )
 }
@@ -698,7 +602,7 @@ function InputModal({ type, data, itemType, onClose, onConfirm, onCreate, accent
     return <div className="fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center backdrop-blur-sm" onClick={onClose}><div className="bg-[#1a1a1a] border border-white/10 p-6 rounded-2xl w-96 shadow-2xl scale-100 animate-in fade-in zoom-in-95" onClick={e => e.stopPropagation()}><h3 className="text-xl font-bold mb-6 text-white">{type === 'rename' ? 'Rename' : 'Create'}</h3><input autoFocus className="w-full bg-black/30 border border-white/10 rounded-xl px-4 py-3 mb-6 text-white outline-none focus:border-white/30 transition-colors" value={val} onChange={e => setVal(e.target.value)} onKeyDown={e => e.key === 'Enter' && (type === 'rename' ? onConfirm(data.path, val) : onCreate(val, itemType))} /><div className="flex justify-end gap-3"><button onClick={onClose} className="px-5 py-2 rounded-lg hover:bg-white/5 text-zinc-400 text-sm">Cancel</button><button onClick={() => { type === 'rename' ? onConfirm(data.path, val) : onCreate(val, type); onClose(); }} className={`px-6 py-2 ${accent.bg} text-white rounded-lg font-bold text-sm shadow-lg`}>Confirm</button></div></div></div>
 }
 
-function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refreshTrigger, accent, onDelete, onEmptyTrash, onDrop, onPaste }) {
+function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refreshTrigger, accent, onDelete, onEmptyTrash, onDrop, onPaste, stats }) {
   const [files, setFiles] = useState([]);
   const [path, setPath] = useState('');
   const [homeDir, setHomeDir] = useState('');
@@ -709,6 +613,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
   const [selected, setSelected] = useState(null);
+  const [dragOverFolder, setDragOverFolder] = useState(null);
 
   const loadFiles = async (targetPath, isTrash = false) => {
     if (!isConnected) return;
@@ -752,13 +657,31 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
       reader.readAsDataURL(file);
   };
 
-  const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
+  // --- Drag & Drop Sidebar Logic ---
+  const handleDropOnSidebar = async (e, targetPath) => {
+      e.preventDefault();
+      e.stopPropagation();
+      const srcPath = e.dataTransfer.getData("text/plain");
+      if (srcPath && targetPath && srcPath !== targetPath) {
+          try {
+             // Move operation
+             await fetch(`${serverUrl}/api/files/move`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ sourcePath: srcPath, destPath: targetPath })
+             });
+             // If we moved from current view, refresh
+             if (srcPath.startsWith(path)) loadFiles(path);
+          } catch (e) { console.error("Move failed", e); }
+      }
+      setDragOverFolder(null);
+  };
 
-  // Breadcrumbs Logic
+  const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
   const pathParts = path ? path.split((path.includes('\\') ? '\\' : '/')).filter(Boolean) : [];
 
   const Breadcrumbs = () => (
-      <div className="flex items-center text-sm font-medium overflow-hidden whitespace-nowrap mask-linear-fade">
+      <div className="flex items-center text-sm font-medium overflow-hidden whitespace-nowrap mask-text-fade">
           <button onClick={() => loadFiles(homeDir)} className="p-1.5 hover:bg-white/10 rounded-md text-zinc-400 hover:text-white transition-colors"><Home size={16}/></button>
           {pathParts.map((part, i) => {
              const target = pathParts.slice(0, i+1).join(path.includes('\\') ? '\\' : '/');
@@ -775,25 +698,54 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
       </div>
   );
 
-  const SidebarLink = ({ icon, label, target, isTrash }) => (
-    <button onClick={() => loadFiles(target, isTrash)} className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm w-full text-left mb-0.5 transition-all duration-200 group ${(!isTrash && path === target) || (isTrash && trashMode) ? `${accent.bg} text-white shadow-lg shadow-${accent.name.toLowerCase()}-500/20` : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-100'}`}>
-      {React.cloneElement(icon, { size: 16, className: ((!isTrash && path === target) || (isTrash && trashMode)) ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300' })}
-      <span>{label}</span>
-    </button>
-  );
+  const SidebarLink = ({ icon, label, target, isTrash }) => {
+      const isActive = (!isTrash && path === target) || (isTrash && trashMode);
+      const isDragTarget = dragOverFolder === (target || 'trash');
+
+      return (
+        <button
+            onClick={() => loadFiles(target, isTrash)}
+            onDragOver={(e) => { e.preventDefault(); setDragOverFolder(target || 'trash'); }}
+            onDragLeave={() => setDragOverFolder(null)}
+            onDrop={(e) => handleDropOnSidebar(e, isTrash ? 'TRASH_MAGIC_PATH' : target)}
+            className={`flex items-center gap-3 px-3 py-2 rounded-lg text-sm w-full text-left mb-0.5 transition-all duration-200 group relative overflow-hidden ${isActive ? `${accent.bg} text-white shadow-lg shadow-${accent.name.toLowerCase()}-500/20` : 'text-zinc-400 hover:bg-white/5 hover:text-zinc-100'}`}
+        >
+            {isDragTarget && <div className="absolute inset-0 bg-white/10 animate-pulse pointer-events-none"/>}
+            {React.cloneElement(icon, { size: 16, className: isActive ? 'text-white' : 'text-zinc-500 group-hover:text-zinc-300' })}
+            <span className="relative z-10">{label}</span>
+        </button>
+      )
+  };
+
+  const diskPercent = stats?.storage ? Math.round((stats.storage.used / stats.storage.total) * 100) : 0;
 
   return (
     <div className="flex h-full text-zinc-200 relative bg-[#09090b]">
       {/* Sidebar */}
-      <div className="w-56 border-r border-white/5 flex flex-col p-3 bg-black/20">
-          <div className="flex items-center gap-2 px-3 mb-6 mt-2 opacity-50"><div className="w-3 h-3 rounded-full bg-white/20"/><span className="text-xs font-bold uppercase tracking-widest">Places</span></div>
-          <SidebarLink icon={<Home />} label="Home" target={homeDir} />
-          <SidebarLink icon={<HardDrive />} label="Root (Pi)" target="/" />
-          <SidebarLink icon={<Laptop />} label="Desktop" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Desktop` : `${homeDir}/Desktop`) : ''} />
-          <SidebarLink icon={<Download />} label="Downloads" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Downloads` : `${homeDir}/Downloads`) : ''} />
-          <SidebarLink icon={<FileText />} label="Documents" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Documents` : `${homeDir}/Documents`) : ''} />
-          <div className="flex-1" />
-          <SidebarLink icon={<Trash2 />} label="Trash" isTrash={true} />
+      <div className="w-60 border-r border-white/5 flex flex-col bg-black/20 backdrop-blur-md">
+          <div className="p-4">
+              <div className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4 px-2">Drives</div>
+              <div className="px-3 py-3 bg-white/5 rounded-xl border border-white/5 mb-6">
+                 <div className="flex items-center gap-3 mb-2">
+                     <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400"><HardDrive size={18}/></div>
+                     <div>
+                         <div className="text-xs font-bold text-white">Local Disk</div>
+                         <div className="text-[10px] text-zinc-500">{formatBytes(stats?.storage?.used)} / {formatBytes(stats?.storage?.total)}</div>
+                     </div>
+                 </div>
+                 <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden">
+                     <div className={`h-full rounded-full transition-all duration-1000 ${diskPercent > 90 ? 'bg-red-500' : 'bg-blue-500'}`} style={{width: `${diskPercent}%`}}/>
+                 </div>
+              </div>
+
+              <div className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 px-2">Favorites</div>
+              <SidebarLink icon={<Home />} label="Home" target={homeDir} />
+              <SidebarLink icon={<Monitor />} label="Desktop" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Desktop` : `${homeDir}/Desktop`) : ''} />
+              <SidebarLink icon={<Download />} label="Downloads" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Downloads` : `${homeDir}/Downloads`) : ''} />
+              <SidebarLink icon={<FileText />} label="Documents" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Documents` : `${homeDir}/Documents`) : ''} />
+              <div className="h-4"/>
+              <SidebarLink icon={<Trash2 />} label="Trash" isTrash={true} />
+          </div>
       </div>
 
       {/* Main Content */}
@@ -805,7 +757,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                   <button onClick={() => loadFiles(path)} className="p-2 hover:bg-white/10 rounded-lg text-zinc-400 hover:text-white"><RefreshCw size={16}/></button>
               </div>
 
-              <div className="flex-1 flex items-center bg-[#1a1a1a] border border-white/5 rounded-xl px-3 h-9 max-w-2xl mx-auto shadow-inner">
+              <div className="flex-1 flex items-center bg-[#1a1a1a] border border-white/5 rounded-xl px-3 h-9 max-w-2xl mx-auto shadow-inner transition-colors focus-within:border-white/20">
                  <Search size={14} className="text-zinc-500 mr-2"/>
                  <input className="bg-transparent border-none outline-none text-xs w-full text-zinc-300 placeholder-zinc-600" placeholder={`Search in ${pathParts[pathParts.length-1] || 'Home'}...`} value={search} onChange={e => setSearch(e.target.value)} />
               </div>
@@ -856,11 +808,15 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                   {filteredFiles.map((f, i) => {
                       const isImg = ['jpg','jpeg','png','gif','webp'].some(e => f.name.toLowerCase().endsWith(e));
                       const isSelected = selected === f.path;
+                      const isDragTarget = dragOverFolder === f.path;
                       return (
                       <div
                         key={i}
                         draggable
                         onDragStart={(e) => e.dataTransfer.setData("text/plain", f.path)}
+                        onDragOver={(e) => { if(f.type==='folder'){ e.preventDefault(); e.stopPropagation(); setDragOverFolder(f.path); }}}
+                        onDragLeave={() => setDragOverFolder(null)}
+                        onDrop={(e) => { if(f.type==='folder'){ handleDropOnSidebar(e, f.path); }}}
                         onClick={(e) => { e.stopPropagation(); setSelected(f.path); }}
                         onDoubleClick={(e) => { e.stopPropagation(); f.type === 'folder' ? loadFiles(f.path, trashMode) : onOpenFile(f); }}
                         onContextMenu={(e) => { setSelected(f.path); onContextMenu(e, f, path); }}
@@ -873,6 +829,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                                 ? "bg-blue-500/20 border-blue-500/50 shadow-[0_0_15px_rgba(59,130,246,0.2)]"
                                 : "bg-transparent border-transparent hover:bg-white/5"
                             }
+                            ${isDragTarget ? 'bg-white/10 ring-2 ring-white/20' : ''}
                         `}>
                           <div className={viewMode === 'grid' ? "w-16 h-16 mb-3 transition-transform group-hover:scale-105" : "w-8 h-8"}>
                               {f.type === 'folder' ? <Folder className={`w-full h-full ${accent.text} fill-current opacity-90`}/> :
@@ -1250,131 +1207,26 @@ function TerminalApp({ serverUrl }) {
 }
 function BrowserApp({ initialUrl }) {
   const NEWTAB_URL = "https://www.simplifyos.cloud/newtab.html";
-
-  const [tabs, setTabs] = useState([
-    { id: Date.now(), url: initialUrl || NEWTAB_URL, title: "New Tab" }
-  ]);
-
+  const [tabs, setTabs] = useState([{ id: Date.now(), url: initialUrl || NEWTAB_URL, title: "New Tab" }]);
   const [activeTab, setActiveTab] = useState(tabs[0].id);
-
   const active = tabs.find(t => t.id === activeTab);
-
-  // --- Update tab URL ---
-  const updateUrl = (id, newUrl) => {
-    setTabs(prev =>
-      prev.map(t => (t.id === id ? { ...t, url: newUrl } : t))
-    );
-  };
-
-  // --- Add Tab ---
-  const addTab = () => {
-    const newId = Date.now();
-    const newTab = {
-      id: newId,
-      url: NEWTAB_URL,
-      title: "New Tab"
-    };
-    setTabs(prev => [...prev, newTab]);
-    setActiveTab(newId);
-  };
-
-  // --- Close Tab ---
-  const closeTab = (id) => {
-    if (tabs.length === 1) return;
-    const idx = tabs.findIndex(t => t.id === id);
-    const newTabs = tabs.filter(t => t.id !== id);
-
-    setTabs(newTabs);
-
-    if (activeTab === id) {
-      const next = newTabs[idx - 1] || newTabs[0];
-      setActiveTab(next.id);
-    }
-  };
-
-  // --- Load URL on Enter ---
-  const handleEnter = (e) => {
-    if (e.key === "Enter") {
-      // force iframe reload
-      updateUrl(active.id, active.url);
-    }
-  };
-
-  // --- Update tab title when iframe loads ---
-  const handleIframeLoad = (e) => {
-    try {
-      const title = e.target.contentDocument.title;
-      setTabs(prev =>
-        prev.map(t =>
-          t.id === active.id ? { ...t, title: title || "Tab" } : t
-        )
-      );
-    } catch {
-      // Cross-origin: give generic title
-      setTabs(prev =>
-        prev.map(t =>
-          t.id === active.id ? { ...t, title: active.url } : t
-        )
-      );
-    }
-  };
+  const updateUrl = (id, newUrl) => { setTabs(prev => prev.map(t => (t.id === id ? { ...t, url: newUrl } : t))); };
+  const addTab = () => { const newId = Date.now(); const newTab = { id: newId, url: NEWTAB_URL, title: "New Tab" }; setTabs(prev => [...prev, newTab]); setActiveTab(newId); };
+  const closeTab = (id) => { if (tabs.length === 1) return; const idx = tabs.findIndex(t => t.id === id); const newTabs = tabs.filter(t => t.id !== id); setTabs(newTabs); if (activeTab === id) { const next = newTabs[idx - 1] || newTabs[0]; setActiveTab(next.id); } };
+  const handleEnter = (e) => { if (e.key === "Enter") { updateUrl(active.id, active.url); } };
+  const handleIframeLoad = (e) => { try { const title = e.target.contentDocument.title; setTabs(prev => prev.map(t => t.id === active.id ? { ...t, title: title || "Tab" } : t)); } catch { setTabs(prev => prev.map(t => t.id === active.id ? { ...t, title: active.url } : t)); } };
 
   return (
     <div className="flex flex-col h-full bg-[#0d0d0d] text-white">
-
-      {/* TAB BAR */}
       <div className="h-10 bg-[#1a1a1a] border-b border-black flex items-center px-2 gap-2 overflow-x-auto">
-        {tabs.map(t => (
-          <div
-            key={t.id}
-            className={`px-3 py-1.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all
-             ${t.id === activeTab ? "bg-[#2a2a2a] text-white" : "bg-[#111] text-zinc-400 hover:bg-[#222]"}
-            `}
-            onClick={() => setActiveTab(t.id)}
-          >
-            <span className="text-sm truncate max-w-[120px]">{t.title}</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                closeTab(t.id);
-              }}
-              className="hover:text-red-400 transition"
-            >
-              ✕
-            </button>
-          </div>
-        ))}
-
-        <button
-          onClick={addTab}
-          className="ml-2 bg-[#222] text-zinc-300 hover:bg-[#333] px-2 py-1 rounded-lg"
-        >
-          +
-        </button>
+        {tabs.map(t => ( <div key={t.id} className={`px-3 py-1.5 rounded-lg flex items-center gap-2 cursor-pointer transition-all ${t.id === activeTab ? "bg-[#2a2a2a] text-white" : "bg-[#111] text-zinc-400 hover:bg-[#222]"}`} onClick={() => setActiveTab(t.id)}><span className="text-sm truncate max-w-[120px]">{t.title}</span><button onClick={(e) => { e.stopPropagation(); closeTab(t.id); }} className="hover:text-red-400 transition">✕</button></div>))}
+        <button onClick={addTab} className="ml-2 bg-[#222] text-zinc-300 hover:bg-[#333] px-2 py-1 rounded-lg">+</button>
       </div>
-
-      {/* URL BAR */}
-      <div className="h-10 bg-[#111] flex items-center px-3 border-b border-black">
-        <input
-          value={active.url}
-          onChange={(e) => updateUrl(active.id, e.target.value)}
-          onKeyDown={handleEnter}
-          className="flex-1 bg-[#0a0a0a] border border-[#333] rounded-lg px-3 py-1 text-sm outline-none text-white placeholder-zinc-500"
-        />
-      </div>
-
-      {/* WEBVIEW */}
-      <iframe
-        key={active.id}
-        src={active.url}
-        onLoad={handleIframeLoad}
-        className="flex-1 w-full"
-        sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"
-      />
+      <div className="h-10 bg-[#111] flex items-center px-3 border-b border-black"><input value={active.url} onChange={(e) => updateUrl(active.id, e.target.value)} onKeyDown={handleEnter} className="flex-1 bg-[#0a0a0a] border border-[#333] rounded-lg px-3 py-1 text-sm outline-none text-white placeholder-zinc-500"/></div>
+      <iframe key={active.id} src={active.url} onLoad={handleIframeLoad} className="flex-1 w-full" sandbox="allow-same-origin allow-scripts allow-forms allow-popups allow-modals allow-downloads"/>
     </div>
   );
 }
-
 
 function FilePreviewModal({ file, serverUrl, onClose }) {
   const downloadUrl = `${serverUrl}/api/files/view?path=${encodeURIComponent(file.path)}`;
@@ -1511,8 +1363,6 @@ export default function App() {
 
   const openApp = (id, title, component, props = {}) => {
     const existing = windows.find(w => w.id === id || (w.component === component && !['texteditor','browser','files'].includes(component)));
-
-    // If app is already open, check if minimized
     if (existing) {
         if (existing.isMinimized) {
             restoreWindow(existing.id);
@@ -1521,78 +1371,22 @@ export default function App() {
         }
         return;
     }
-
-    const newWin = {
-      id: id || Date.now(),
-      title,
-      component,
-      props,
-      zIndex: windows.length + 1,
-      x: 100 + (windows.length * 30),
-      y: 80 + (windows.length * 30),
-      width: 1000,
-      height: 650,
-      isMinimized: false,
-      isMaximized: false
-    };
+    const newWin = { id: id || Date.now(), title, component, props, zIndex: windows.length + 1, x: 100 + (windows.length * 30), y: 80 + (windows.length * 30), width: 1000, height: 650, isMinimized: false, isMaximized: false };
     setWindows([...windows, newWin]);
     setActiveWindowId(newWin.id);
   };
 
   const closeWindow = (id) => setWindows(prev => prev.filter(w => w.id !== id));
-
-  const minimizeWindow = (id) => {
-    setWindows(prev => prev.map(w =>
-        w.id === id ? { ...w, isMinimized: true } : w
-    ));
-    // Focus next window
-    const remaining = windows.filter(w => w.id !== id && !w.isMinimized);
-    if (remaining.length > 0) setActiveWindowId(remaining[remaining.length - 1].id);
-    else setActiveWindowId(null);
-  };
-
-  const restoreWindow = (id) => {
-      setWindows(prev => prev.map(w =>
-          w.id === id ? { ...w, isMinimized: false } : w
-      ));
-      setActiveWindowId(id);
-  };
-
-  const maximizeWindow = (isMax, id, oldPos, oldSize, desktopWidth, desktopHeight) => {
-    setWindows(prev => prev.map(w => {
-        if (w.id === id) {
-            if (isMax) {
-                w.restorePos = oldPos;
-                w.restoreSize = oldSize;
-                w.x = 0;
-                w.y = 0;
-                w.width = desktopWidth;
-                w.height = desktopHeight;
-            } else {
-                w.x = w.restorePos.x;
-                w.y = w.restorePos.y;
-                w.width = w.restoreSize.w;
-                w.height = w.restoreSize.h;
-                delete w.restorePos;
-                delete w.restoreSize;
-            }
-            return { ...w, isMaximized: isMax, isMinimized: false };
-        }
-        return w;
-    }));
-  };
+  const minimizeWindow = (id) => { setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: true } : w)); const remaining = windows.filter(w => w.id !== id && !w.isMinimized); if (remaining.length > 0) setActiveWindowId(remaining[remaining.length - 1].id); else setActiveWindowId(null); };
+  const restoreWindow = (id) => { setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: false } : w)); setActiveWindowId(id); };
+  const maximizeWindow = (isMax, id, oldPos, oldSize, desktopWidth, desktopHeight) => { setWindows(prev => prev.map(w => { if (w.id === id) { if (isMax) { w.restorePos = oldPos; w.restoreSize = oldSize; w.x = 0; w.y = 0; w.width = desktopWidth; w.height = desktopHeight; } else { w.x = w.restorePos.x; w.y = w.restorePos.y; w.width = w.restoreSize.w; w.height = w.restoreSize.h; delete w.restorePos; delete w.restoreSize; } return { ...w, isMaximized: isMax, isMinimized: false }; } return w; })); };
 
   const moveDesktopItem = (id, x, y) => setDesktopItems(prev => prev.map(item => item.id === id ? { ...item, x, y } : item));
   const moveWidget = (id, x, y) => setWidgets(prev => prev.map(w => w.id === id ? { ...w, x, y } : w));
   const addWidget = (type) => { const id = Date.now(); setWidgets([...widgets, { id, type, x: 300, y: 100 }]); };
   const removeWidget = (id) => setWidgets(prev => prev.filter(w => w.id !== id));
 
-  const handleCreateDesktopItem = (name, type) => {
-      const newItem = { id: Date.now(), name: name, type: type, x: 200, y: 200 };
-      setDesktopItems([...desktopItems, newItem]);
-      setModal(null);
-  };
-
+  const handleCreateDesktopItem = (name, type) => { const newItem = { id: Date.now(), name: name, type: type, x: 200, y: 200 }; setDesktopItems([...desktopItems, newItem]); setModal(null); };
   const handleRename = async (oldPath, newName, isDesktop = false, id = null) => {
       if (isDesktop) {
           setDesktopItems(prev => prev.map(i => i.id === id ? { ...i, name: newName } : i));
@@ -1616,38 +1410,21 @@ export default function App() {
       else setFileToOpen(file);
   };
 
-  const handleDelete = async (path) => {
-      try {
-          await fetch(`${serverUrl}/api/files/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) });
-          setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w));
-      } catch(e) { console.error(e); }
-  };
-
+  const handleDelete = async (path) => { try { await fetch(`${serverUrl}/api/files/delete`, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ path }) }); setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w)); } catch(e) { console.error(e); } };
   const handleCopy = (path, type = 'copy') => { setClipboard({ path, type }); setContextMenu(null); };
-
   const handlePaste = async (destPath) => {
       if (!clipboard) return;
       try {
           const endpoint = clipboard.type === 'cut' ? 'move' : 'copy';
-          await fetch(`${serverUrl}/api/files/${endpoint}`, {
-              method: 'POST',
-              headers: {'Content-Type': 'application/json'},
-              body: JSON.stringify({ sourcePath: clipboard.path, destPath })
-          });
+          await fetch(`${serverUrl}/api/files/${endpoint}`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ sourcePath: clipboard.path, destPath }) });
           if (clipboard.type === 'cut') setClipboard(null);
           setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w));
       } catch (e) { console.error(e); }
       setContextMenu(null);
   };
 
-  const handleEmptyTrash = async () => {
-      try { await fetch(`${serverUrl}/api/files/empty-trash`, { method: 'POST' }); setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w)); } catch(e) { console.error(e); }
-  };
-
-  const handleCreate = async (name, type, path) => {
-    try { await fetch(`${serverUrl}/api/files/create`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ type, name, folderPath: path }) }); setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w)); } catch(e) { console.error(e); }
-    setModal(null);
-  };
+  const handleEmptyTrash = async () => { try { await fetch(`${serverUrl}/api/files/empty-trash`, { method: 'POST' }); setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w)); } catch(e) { console.error(e); } };
+  const handleCreate = async (name, type, path) => { try { await fetch(`${serverUrl}/api/files/create`, { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ type, name, folderPath: path }) }); setWindows(prev => prev.map(w => w.component === 'files' ? { ...w, props: { ...w.props, refresh: Date.now() } } : w)); } catch(e) { console.error(e); } setModal(null); };
 
   if (isBooting) return <BootScreen status={bootStatus} onRetry={() => setIsBooting(false)} />;
   if (!isLoggedIn) return <LoginScreen onLogin={handleLogin} wallpaper={wallpaper} ready={ready} />;
@@ -1662,19 +1439,9 @@ export default function App() {
         {widgets.map(widget => <DesktopWidget key={widget.id} widget={widget} stats={stats} onMove={moveWidget} onRemove={removeWidget} />)}
       </div>
       {windows.map(w => (
-        <Window
-            key={w.id}
-            config={w}
-            isActive={activeWindowId === w.id}
-            onFocus={() => setActiveWindowId(w.id)}
-            onClose={() => closeWindow(w.id)}
-            onMinimize={() => minimizeWindow(w.id)}
-            onMaximize={maximizeWindow}
-            isMinimized={w.isMinimized}
-            isMaximized={w.isMaximized}
-        >
+        <Window key={w.id} config={w} isActive={activeWindowId === w.id} onFocus={() => setActiveWindowId(w.id)} onClose={() => closeWindow(w.id)} onMinimize={() => minimizeWindow(w.id)} onMaximize={maximizeWindow} isMinimized={w.isMinimized} isMaximized={w.isMaximized}>
           <ErrorBoundary>
-            {w.component === 'files' && <FileManager serverUrl={serverUrl} isConnected={isConnected} onOpenFile={handleFileOpen} refreshTrigger={w.props.refresh} accent={accent} onDelete={handleDelete} onEmptyTrash={handleEmptyTrash} onContextMenu={(e, file, path) => { e.stopPropagation(); e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type: file ? 'file' : 'folder', data: file, path }); }} onDrop={(e, path) => { e.preventDefault(); handlePaste(path); }} onPaste={handlePaste} />}
+            {w.component === 'files' && <FileManager serverUrl={serverUrl} isConnected={isConnected} onOpenFile={handleFileOpen} refreshTrigger={w.props.refresh} accent={accent} onDelete={handleDelete} onEmptyTrash={handleEmptyTrash} stats={stats} onContextMenu={(e, file, path) => { e.stopPropagation(); e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, type: file ? 'file' : 'folder', data: file, path }); }} onDrop={(e, path) => { e.preventDefault(); handlePaste(path); }} onPaste={handlePaste} />}
             {w.component === 'settings' && <SettingsApp stats={stats} setWallpaper={setWallpaper} wallpapers={WALLPAPERS} accent={accent} setAccent={setAccent} accents={ACCENTS} onLogout={handleLogout} serverUrl={serverUrl} addWidget={addWidget} />}
             {w.component === 'browser' && <BrowserApp initialUrl={w.props.initialUrl} accent={accent} />}
             {w.component === 'appcenter' && <AppStore serverUrl={serverUrl} isConnected={isConnected} accent={accent} onOpenUrl={(url, label) => openApp(`browser-${url}`, label || 'App', 'browser', { initialUrl: url })} />}
