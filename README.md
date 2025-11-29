@@ -23,3 +23,7 @@ docker compose up --build -d
 ### PS: This runs completly inside a docker container
 
 *Hope you like it xD*
+
+[![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/wAtg8byjyD)
+[![Reddit](https://img.shields.io/badge/Reddit-FF4500?style=for-the-badge&logo=reddit&logoColor=white)](https://www.reddit.com/r/SimplifyOS/)
+[![Website](https://img.shields.io/badge/Website-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://simplifyos.cloud)
