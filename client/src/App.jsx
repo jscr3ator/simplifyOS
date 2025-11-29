@@ -12,7 +12,7 @@ import {
   Scissors, Copy, Clipboard, Link, ChevronDown, CheckCircle2, XCircle, Loader2,
   AlertTriangle, WifiOff, Network, Info, Shield, Eye, EyeOff, ArrowLeft, ArrowRight, Bookmark,
   Database, ShieldCheck, Zap, Upload, Package, Gauge, Calendar, StickyNote, MoveUp,
-  MessageSquare, Gamepad2, Radio, Tv, Layers
+  MessageSquare, Gamepad2, Radio, Tv, Layers, Usb
 } from 'lucide-react';
 
 const DEFAULT_WALLPAPER = "https://www.simplifyos.cloud/wallpaper.png";
@@ -60,252 +60,359 @@ const ACCENTS = [
   { name: "Amber", class: "text-amber-500", bg: "bg-amber-500", border: "border-amber-500/50", glow: "shadow-amber-500/20" },
 ];
 
-// Robust list of self-hosted apps
+// --- EXTENDED APP STORE LIST ---
 const PRESET_APPS = [
-    // --- Media ---
-    {
-        id: 'plex',
-        name: 'Plex',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/plex.png',
-        desc: 'Organize and stream your personal collection.',
-        cmd: 'docker run -d --name=plex --net=host -e PUID=1000 -e PGID=1000 -e VERSION=docker -v /docker/plex/config:/config -v /docker/plex/tv:/tv -v /docker/plex/movies:/movies --restart unless-stopped lscr.io/linuxserver/plex:latest'
-    },
-    {
-        id: 'jellyfin',
-        name: 'Jellyfin',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png',
-        desc: 'The Free Software Media System.',
-        cmd: 'docker run -d --name=jellyfin -p 8096:8096 -p 7359:7359/udp -v /docker/jellyfin/config:/config -v /docker/jellyfin/cache:/cache -v /docker/media:/media --restart unless-stopped jellyfin/jellyfin'
-    },
-    {
-        id: 'overseerr',
-        name: 'Overseerr',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/overseerr.png',
-        desc: 'Request management and media discovery for Plex.',
-        cmd: 'docker run -d --name=overseerr -e PUID=1000 -e PGID=1000 -p 5055:5055 -v /docker/overseerr/config:/config --restart unless-stopped lscr.io/linuxserver/overseerr:latest'
-    },
-    {
-        id: 'jellyseerr',
-        name: 'Jellyseerr',
-        category: 'Media',
-        icon: 'https://raw.githubusercontent.com/Fallenbagel/jellyseerr/main/public/logo_full.png',
-        desc: 'Request management for Jellyfin & Emby.',
-        cmd: 'docker run -d --name=jellyseerr -e PUID=1000 -e PGID=1000 -p 5056:5055 -v /docker/jellyseerr/config:/app/config --restart unless-stopped fallenbagel/jellyseerr:latest'
-    },
-    {
-        id: 'sonarr',
-        name: 'Sonarr',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sonarr.png',
-        desc: 'Smart TV show management.',
-        cmd: 'docker run -d --name=sonarr -e PUID=1000 -e PGID=1000 -p 8989:8989 -v /docker/sonarr/config:/config -v /docker/media/tv:/tv -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/sonarr:latest'
-    },
-    {
-        id: 'radarr',
-        name: 'Radarr',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/radarr.png',
-        desc: 'Smart movie management.',
-        cmd: 'docker run -d --name=radarr -e PUID=1000 -e PGID=1000 -p 7878:7878 -v /docker/radarr/config:/config -v /docker/media/movies:/movies -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/radarr:latest'
-    },
-    {
-        id: 'bazarr',
-        name: 'Bazarr',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png',
-        desc: 'Subtitle manager for Sonarr and Radarr.',
-        cmd: 'docker run -d --name=bazarr -e PUID=1000 -e PGID=1000 -p 6767:6767 -v /docker/bazarr/config:/config -v /docker/media/movies:/movies -v /docker/media/tv:/tv --restart unless-stopped lscr.io/linuxserver/bazarr:latest'
-    },
-    {
-        id: 'prowlarr',
-        name: 'Prowlarr',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png',
-        desc: 'Indexer manager / proxy.',
-        cmd: 'docker run -d --name=prowlarr -e PUID=1000 -e PGID=1000 -p 9696:9696 -v /docker/prowlarr/config:/config --restart unless-stopped lscr.io/linuxserver/prowlarr:latest'
-    },
-    {
-        id: 'sabnzbd',
-        name: 'SABnzbd',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sabnzbd.png',
-        desc: 'Free open-source binary newsreader.',
-        cmd: 'docker run -d --name=sabnzbd -e PUID=1000 -e PGID=1000 -p 8085:8080 -v /docker/sabnzbd/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/sabnzbd:latest'
-    },
-    {
-        id: 'transmission',
-        name: 'Transmission',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/transmission.png',
-        desc: 'Fast BitTorrent client.',
-        cmd: 'docker run -d --name=transmission -e PUID=1000 -e PGID=1000 -p 9091:9091 -p 51413:51413 -p 51413:51413/udp -v /docker/transmission/config:/config -v /docker/downloads:/downloads -v /docker/watch:/watch --restart unless-stopped lscr.io/linuxserver/transmission:latest'
-    },
-    {
-        id: 'qbittorrent',
-        name: 'qBittorrent',
-        category: 'Media',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png',
-        desc: 'Powerful torrent client.',
-        cmd: 'docker run -d --name=qbittorrent -e PUID=1000 -e PGID=1000 -e WEBUI_PORT=8080 -p 8080:8080 -p 6881:6881 -p 6881:6881/udp -v /docker/qbittorrent/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/qbittorrent:latest'
-    },
+  // --- Media ---
+  {
+    id: 'plex',
+    name: 'Plex',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/plex.png',
+    desc: 'Organize and stream your personal collection.',
+    cmd: 'docker run -d --name=plex --net=host -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -e VERSION=docker -v /docker/plex/config:/config -v /docker/plex/tv:/tv -v /docker/plex/movies:/movies --restart unless-stopped lscr.io/linuxserver/plex:latest'
+  },
+  {
+    id: 'jellyfin',
+    name: 'Jellyfin',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/jellyfin.png',
+    desc: 'The Free Software Media System.',
+    cmd: 'docker run -d --name=jellyfin -e TZ=Etc/UTC -p 8096:8096 -p 7359:7359/udp -v /docker/jellyfin/config:/config -v /docker/jellyfin/cache:/cache -v /docker/media:/media --restart unless-stopped jellyfin/jellyfin'
+  },
+  {
+    id: 'tautulli',
+    name: 'Tautulli',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tautulli.png',
+    desc: 'Monitoring and tracking tool for Plex.',
+    cmd: 'docker run -d --name=tautulli -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 8181:8181 -v /docker/tautulli/config:/config --restart unless-stopped lscr.io/linuxserver/tautulli:latest'
+  },
+  {
+    id: 'overseerr',
+    name: 'Overseerr',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/overseerr.png',
+    desc: 'Request management and media discovery for Plex.',
+    cmd: 'docker run -d --name=overseerr -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 5055:5055 -v /docker/overseerr/config:/config --restart unless-stopped lscr.io/linuxserver/overseerr:latest'
+  },
+  {
+    id: 'jellyseerr',
+    name: 'Jellyseerr',
+    category: 'Media',
+    icon: 'https://raw.githubusercontent.com/Fallenbagel/jellyseerr/main/public/logo_full.png',
+    desc: 'Request management for Jellyfin & Emby.',
+    cmd: 'docker run -d --name=jellyseerr -e TZ=Etc/UTC -e LOG_LEVEL=debug -p 5056:5055 -v /docker/jellyseerr/config:/app/config --restart unless-stopped fallenbagel/jellyseerr:latest'
+  },
+  {
+    id: 'sonarr',
+    name: 'Sonarr',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sonarr.png',
+    desc: 'Smart TV show management.',
+    cmd: 'docker run -d --name=sonarr -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 8989:8989 -v /docker/sonarr/config:/config -v /docker/media/tv:/tv -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/sonarr:latest'
+  },
+  {
+    id: 'radarr',
+    name: 'Radarr',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/radarr.png',
+    desc: 'Smart movie management.',
+    cmd: 'docker run -d --name=radarr -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 7878:7878 -v /docker/radarr/config:/config -v /docker/media/movies:/movies -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/radarr:latest'
+  },
+  {
+    id: 'bazarr',
+    name: 'Bazarr',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/bazarr.png',
+    desc: 'Subtitle manager for Sonarr and Radarr.',
+    cmd: 'docker run -d --name=bazarr -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 6767:6767 -v /docker/bazarr/config:/config -v /docker/media/movies:/movies -v /docker/media/tv:/tv --restart unless-stopped lscr.io/linuxserver/bazarr:latest'
+  },
+  {
+    id: 'prowlarr',
+    name: 'Prowlarr',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/prowlarr.png',
+    desc: 'Indexer manager / proxy.',
+    cmd: 'docker run -d --name=prowlarr -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 9696:9696 -v /docker/prowlarr/config:/config --restart unless-stopped lscr.io/linuxserver/prowlarr:latest'
+  },
+  {
+    id: 'sabnzbd',
+    name: 'SABnzbd',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/sabnzbd.png',
+    desc: 'Free open-source binary newsreader.',
+    cmd: 'docker run -d --name=sabnzbd -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 8085:8080 -v /docker/sabnzbd/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/sabnzbd:latest'
+  },
+  {
+    id: 'transmission',
+    name: 'Transmission',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/transmission.png',
+    desc: 'Fast BitTorrent client.',
+    cmd: 'docker run -d --name=transmission -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 9091:9091 -p 51413:51413 -p 51413:51413/udp -v /docker/transmission/config:/config -v /docker/downloads:/downloads -v /docker/watch:/watch --restart unless-stopped lscr.io/linuxserver/transmission:latest'
+  },
+  {
+    id: 'qbittorrent',
+    name: 'qBittorrent',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/qbittorrent.png',
+    desc: 'Powerful torrent client.',
+    cmd: 'docker run -d --name=qbittorrent -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -e WEBUI_PORT=8080 -p 8080:8080 -p 6881:6881 -p 6881:6881/udp -v /docker/qbittorrent/config:/config -v /docker/downloads:/downloads --restart unless-stopped lscr.io/linuxserver/qbittorrent:latest'
+  },
+  {
+    id: 'navidrome',
+    name: 'Navidrome',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/navidrome.png',
+    desc: 'Modern Music Server and Streamer.',
+    cmd: 'docker run -d --name=navidrome -p 4533:4533 -v /docker/music:/music -v /docker/navidrome/data:/data --restart unless-stopped deluan/navidrome:latest'
+  },
+  {
+    id: 'audiobookshelf',
+    name: 'Audiobookshelf',
+    category: 'Media',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/audiobookshelf.png',
+    desc: 'Self-hosted audiobook and podcast server.',
+    cmd: 'docker run -d --name=audiobookshelf -p 13378:80 -v /docker/audiobooks:/audiobooks -v /docker/podcasts:/podcasts -v /docker/audiobookshelf/config:/config -v /docker/audiobookshelf/metadata:/metadata --restart unless-stopped ghcr.io/advplyr/audiobookshelf:latest'
+  },
 
-    // --- Home & Automation ---
-    {
-        id: 'homeassistant',
-        name: 'Home Assistant',
-        category: 'Home',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png',
-        desc: 'Local home automation.',
-        cmd: 'docker run -d --name=homeassistant --net=host -v /docker/homeassistant/config:/config --restart unless-stopped ghcr.io/home-assistant/home-assistant:stable'
-    },
-    {
-        id: 'nodered',
-        name: 'Node-RED',
-        category: 'Home',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/node-red.png',
-        desc: 'Low-code automation.',
-        cmd: 'docker run -d --name=nodered -p 1880:1880 -v /docker/nodered/data:/data --restart unless-stopped nodered/node-red'
-    },
-    {
-        id: 'mqtt',
-        name: 'Mosquitto',
-        category: 'Home',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/mosquitto.png',
-        desc: 'MQTT message broker.',
-        cmd: 'docker run -d --name=mosquitto -p 1883:1883 -p 9001:9001 -v /docker/mosquitto/config:/mosquitto/config -v /docker/mosquitto/data:/mosquitto/data -v /docker/mosquitto/log:/mosquitto/log --restart unless-stopped eclipse-mosquitto'
-    },
-    {
-        id: 'homebridge',
-        name: 'Homebridge',
-        category: 'Home',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/homebridge.png',
-        desc: 'HomeKit for everything.',
-        cmd: 'docker run -d --name=homebridge --net=host -v /docker/homebridge:/homebridge --restart unless-stopped homebridge/homebridge'
-    },
-    {
-        id: 'scrypted',
-        name: 'Scrypted',
-        category: 'Home',
-        icon: 'https://raw.githubusercontent.com/koush/scrypted/main/images/scrypted.png',
-        desc: 'High-performance camera hub.',
-        cmd: 'docker run -d --name=scrypted --network host -v /docker/scrypted:/server/volume --restart unless-stopped ghcr.io/koush/scrypted'
-    },
+  // --- Home & Automation ---
+  {
+    id: 'homeassistant',
+    name: 'Home Assistant',
+    category: 'Home',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/home-assistant.png',
+    desc: 'Local home automation.',
+    cmd: 'docker run -d --name=homeassistant --net=host -e TZ=Etc/UTC -v /docker/homeassistant/config:/config --restart unless-stopped ghcr.io/home-assistant/home-assistant:stable'
+  },
+  {
+    id: 'nodered',
+    name: 'Node-RED',
+    category: 'Home',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/node-red.png',
+    desc: 'Low-code automation.',
+    cmd: 'docker run -d --name=nodered -p 1880:1880 -v /docker/nodered/data:/data --restart unless-stopped nodered/node-red'
+  },
+  {
+    id: 'mqtt',
+    name: 'Mosquitto',
+    category: 'Home',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/mosquitto.png',
+    desc: 'MQTT message broker.',
+    cmd: 'docker run -d --name=mosquitto -p 1883:1883 -p 9001:9001 -v /docker/mosquitto/config:/mosquitto/config -v /docker/mosquitto/data:/mosquitto/data -v /docker/mosquitto/log:/mosquitto/log --restart unless-stopped eclipse-mosquitto'
+  },
+  {
+    id: 'homebridge',
+    name: 'Homebridge',
+    category: 'Home',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/homebridge.png',
+    desc: 'HomeKit for everything.',
+    cmd: 'docker run -d --name=homebridge --net=host -e TZ=Etc/UTC -v /docker/homebridge:/homebridge --restart unless-stopped homebridge/homebridge:latest'
+  },
+  {
+    id: 'scrypted',
+    name: 'Scrypted',
+    category: 'Home',
+    icon: 'https://raw.githubusercontent.com/koush/scrypted/main/images/scrypted.png',
+    desc: 'High-performance camera hub.',
+    cmd: 'docker run -d --name=scrypted --network=host -v /docker/scrypted:/server/volume --restart unless-stopped ghcr.io/koush/scrypted'
+  },
 
-    // --- Network & Security ---
-    {
-        id: 'pihole',
-        name: 'Pi-hole',
-        category: 'Network',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/pi-hole.png',
-        desc: 'Network-wide ad blocking.',
-        cmd: 'docker run -d --name=pihole -p 53:53/tcp -p 53:53/udp -p 8081:80 -e TZ=America/Los_Angeles -v /docker/pihole/etc-pihole:/etc/pihole -v /docker/pihole/dnsmasq.d:/etc/dnsmasq.d --cap-add=NET_ADMIN --restart unless-stopped pihole/pihole'
-    },
-    {
-        id: 'adguard',
-        name: 'AdGuard Home',
-        category: 'Network',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard-home.png',
-        desc: 'Ad & tracker blocking DNS.',
-        cmd: 'docker run -d --name=adguardhome -p 53:53/tcp -p 53:53/udp -p 3000:3000 -v /docker/adguard/work:/opt/adguardhome/work -v /docker/adguard/conf:/opt/adguardhome/conf --restart unless-stopped adguard/adguardhome'
-    },
-    {
-        id: 'npm',
-        name: 'Nginx Proxy Mgr',
-        category: 'Network',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nginx-proxy-manager.png',
-        desc: 'Reverse proxy with UI.',
-        cmd: 'docker run -d --name=npm -p 80:80 -p 81:81 -p 443:443 -v /docker/npm/data:/data -v /docker/npm/letsencrypt:/etc/letsencrypt --restart unless-stopped jc21/nginx-proxy-manager:latest'
-    },
-    {
-        id: 'tailscale',
-        name: 'Tailscale',
-        category: 'Network',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tailscale.png',
-        desc: 'Zero-config mesh VPN.',
-        cmd: 'docker run -d --name=tailscale --net=host --privileged -v /dev/net/tun:/dev/net/tun -v /docker/tailscale:/var/lib/tailscale -e TS_AUTHKEY=YOURKEY tailscale/tailscale'
-    },
+  // --- Network & Security ---
+  {
+    id: 'pihole',
+    name: 'Pi-hole',
+    category: 'Network',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/pi-hole.png',
+    desc: 'Network-wide ad blocking.',
+    cmd: 'docker run -d --name=pihole -p 53:53/tcp -p 53:53/udp -p 8081:80 -e TZ=Etc/UTC -v /docker/pihole/etc-pihole:/etc/pihole -v /docker/pihole/dnsmasq.d:/etc/dnsmasq.d --restart unless-stopped pihole/pihole:latest'
+  },
+  {
+    id: 'adguard',
+    name: 'AdGuard Home',
+    category: 'Network',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/adguard-home.png',
+    desc: 'Ad & tracker blocking DNS.',
+    cmd: 'docker run -d --name=adguardhome -p 53:53/tcp -p 53:53/udp -p 3000:3000 -v /docker/adguard/work:/opt/adguardhome/work -v /docker/adguard/conf:/opt/adguardhome/conf --restart unless-stopped adguard/adguardhome:latest'
+  },
+  {
+    id: 'npm',
+    name: 'Nginx Proxy Mgr',
+    category: 'Network',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nginx-proxy-manager.png',
+    desc: 'Reverse proxy with UI.',
+    cmd: 'docker run -d --name=npm -p 80:80 -p 81:81 -p 443:443 -v /docker/npm/data:/data -v /docker/npm/letsencrypt:/etc/letsencrypt --restart unless-stopped jc21/nginx-proxy-manager:latest'
+  },
+  {
+    id: 'tailscale',
+    name: 'Tailscale',
+    category: 'Network',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/tailscale.png',
+    desc: 'Zero-config mesh VPN.',
+    cmd: 'docker run -d --name=tailscale --net=host --privileged -v /dev/net/tun:/dev/net/tun -v /docker/tailscale/state:/var/lib/tailscale -e TS_AUTHKEY=YOUR_TAILSCALE_AUTHKEY -e TS_ACCEPT_DNS=true --restart unless-stopped tailscale/tailscale:latest'
+  },
+  {
+    id: 'wireguard',
+    name: 'WireGuard Easy',
+    category: 'Network',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/wireguard.png',
+    desc: 'Easy WireGuard VPN Server.',
+    cmd: 'docker run -d --name=wg-easy -e WG_HOST=YOUR_SERVER_IP_OR_DOMAIN -e PASSWORD=change_me -e WG_DEFAULT_DNS=1.1.1.1 -e WG_ALLOWED_IPS=0.0.0.0/0,::/0 -v /docker/wg-easy:/etc/wireguard -p 51820:51820/udp -p 51821:51821/tcp --cap-add=NET_ADMIN --cap-add=SYS_MODULE --sysctl net.ipv4.conf.all.src_valid_mark=1 --restart unless-stopped ghcr.io/wg-easy/wg-easy:latest'
+  },
 
-    // --- Monitoring ---
-    {
-        id: 'heimdall',
-        name: 'Heimdall',
-        category: 'Monitoring',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/heimdall.png',
-        desc: 'Application dashboard.',
-        cmd: 'docker run -d --name=heimdall -e PUID=1000 -e PGID=1000 -p 8088:80 -p 4443:443 -v /docker/heimdall/config:/config --restart unless-stopped lscr.io/linuxserver/heimdall:latest'
-    },
-    {
-        id: 'portainer',
-        name: 'Portainer',
-        category: 'Monitoring',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png',
-        desc: 'Docker management UI.',
-        cmd: 'docker run -d --name=portainer -p 9443:9443 -v /var/run/docker.sock:/var/run/docker.sock -v /docker/portainer:/data --restart always portainer/portainer-ce:latest'
-    },
-    {
-        id: 'uptime',
-        name: 'Uptime Kuma',
-        category: 'Monitoring',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/uptime-kuma.png',
-        desc: 'Self-hosted uptime monitor.',
-        cmd: 'docker run -d --name=uptime-kuma -p 3001:3001 -v /docker/uptime-kuma:/app/data --restart=always louislam/uptime-kuma:latest'
-    },
-    {
-        id: 'glances',
-        name: 'Glances',
-        category: 'Monitoring',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/glances.png',
-        desc: 'System monitoring.',
-        cmd: 'docker run -d --name=glances -p 61208:61208 -e GLANCES_OPT="-w" -v /var/run/docker.sock:/var/run/docker.sock:ro --pid host --restart always nicolargo/glances'
-    },
+  // --- Monitoring ---
+  {
+    id: 'heimdall',
+    name: 'Heimdall',
+    category: 'Monitoring',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/heimdall.png',
+    desc: 'Application dashboard.',
+    cmd: 'docker run -d --name=heimdall -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 8088:80 -p 4443:443 -v /docker/heimdall/config:/config --restart unless-stopped lscr.io/linuxserver/heimdall:latest'
+  },
+  {
+    id: 'portainer',
+    name: 'Portainer',
+    category: 'Monitoring',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/portainer.png',
+    desc: 'Docker management UI.',
+    cmd: 'docker run -d --name=portainer -p 9443:9443 -v /var/run/docker.sock:/var/run/docker.sock -v /docker/portainer:/data --restart=always portainer/portainer-ce:latest'
+  },
+  {
+    id: 'uptime',
+    name: 'Uptime Kuma',
+    category: 'Monitoring',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/uptime-kuma.png',
+    desc: 'Self-hosted uptime monitor.',
+    cmd: 'docker run -d --name=uptime-kuma -p 3001:3001 -v /docker/uptime-kuma:/app/data --restart=always louislam/uptime-kuma:latest'
+  },
+  {
+    id: 'glances',
+    name: 'Glances',
+    category: 'Monitoring',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/glances.png',
+    desc: 'System monitoring.',
+    cmd: 'docker run -d --name=glances -p 61208:61208 -e GLANCES_OPT="-w" -v /var/run/docker.sock:/var/run/docker.sock:ro --pid=host --restart=always nicolargo/glances:latest'
+  },
+  {
+    id: 'netdata',
+    name: 'Netdata',
+    category: 'Monitoring',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/netdata.png',
+    desc: 'Real-time performance monitoring.',
+    cmd: 'docker run -d --name=netdata -p 19999:19999 -v netdataconfig:/etc/netdata -v netdatalib:/var/lib/netdata -v netdatacache:/var/cache/netdata -v /:/host/root:ro,rslave -v /etc/passwd:/host/etc/passwd:ro -v /etc/group:/host/etc/group:ro -v /proc:/host/proc:ro -v /sys:/host/sys:ro --cap-add SYS_PTRACE --security-opt apparmor=unconfined --restart unless-stopped netdata/netdata:latest'
+  },
+  {
+    id: 'dozzle',
+    name: 'Dozzle',
+    category: 'Monitoring',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/dozzle.png',
+    desc: 'Real-time Docker log viewer.',
+    cmd: 'docker run -d --name=dozzle -p 8888:8080 -v /var/run/docker.sock:/var/run/docker.sock --restart unless-stopped amir20/dozzle:latest'
+  },
 
-    // --- Productivity ---
-    {
-        id: 'nextcloud',
-        name: 'Nextcloud',
-        category: 'Productivity',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nextcloud.png',
-        desc: 'Self-hosted cloud storage.',
-        cmd: 'docker run -d --name=nextcloud -p 8080:80 -v /docker/nextcloud:/var/www/html --restart unless-stopped nextcloud'
-    },
-    {
-        id: 'syncthing',
-        name: 'Syncthing',
-        category: 'Productivity',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/syncthing.png',
-        desc: 'Self-hosted file sync.',
-        cmd: 'docker run -d --name=syncthing -p 8384:8384 -p 22000:22000/tcp -p 22000:22000/udp -p 21027:21027/udp -v /docker/syncthing:/var/syncthing --restart unless-stopped linuxserver/syncthing'
-    },
-    {
-        id: 'filebrowser',
-        name: 'FileBrowser',
-        category: 'Productivity',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/filebrowser.png',
-        desc: 'Web-based file manager.',
-        cmd: 'docker run -d --name=filebrowser -p 8082:80 -v /docker/files:/srv filebrowser/filebrowser'
-    },
-    {
-        id: 'vaultwarden',
-        name: 'Vaultwarden',
-        category: 'Productivity',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vaultwarden.png',
-        desc: 'Self-hosted password manager.',
-        cmd: 'docker run -d --name=vaultwarden -p 3012:80 -v /docker/vaultwarden:/data --restart unless-stopped vaultwarden/server:latest'
-    },
+  // --- Productivity ---
+  {
+    id: 'nextcloud',
+    name: 'Nextcloud',
+    category: 'Productivity',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/nextcloud.png',
+    desc: 'Self-hosted cloud storage.',
+    cmd: 'docker run -d --name=nextcloud -p 8080:80 -v /docker/nextcloud:/var/www/html --restart unless-stopped nextcloud:latest'
+  },
+  {
+    id: 'syncthing',
+    name: 'Syncthing',
+    category: 'Productivity',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/syncthing.png',
+    desc: 'Self-hosted file sync.',
+    cmd: 'docker run -d --name=syncthing -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -p 8384:8384 -p 22000:22000/tcp -p 22000:22000/udp -p 21027:21027/udp -v /docker/syncthing/config:/config -v /docker/syncthing/data:/data --restart unless-stopped lscr.io/linuxserver/syncthing:latest'
+  },
+  {
+    id: 'filebrowser',
+    name: 'FileBrowser',
+    category: 'Productivity',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/filebrowser.png',
+    desc: 'Web-based file manager.',
+    cmd: 'docker run -d --name=filebrowser -p 8082:80 -v /docker/files:/srv -v /docker/filebrowser/database:/database -v /docker/filebrowser/config:/config --restart unless-stopped filebrowser/filebrowser:latest'
+  },
+  {
+    id: 'vaultwarden',
+    name: 'Vaultwarden',
+    category: 'Productivity',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vaultwarden.png',
+    desc: 'Self-hosted password manager.',
+    cmd: 'docker run -d --name=vaultwarden -p 3012:80 -v /docker/vaultwarden:/data -e WEBSOCKET_ENABLED=true --restart unless-stopped vaultwarden/server:latest'
+  },
+  {
+    id: 'paperless',
+    name: 'Paperless-ngx',
+    category: 'Productivity',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/paperless-ngx.png',
+    desc: 'Document management system.',
+    cmd: 'docker run -d --name=paperless -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -e PAPERLESS_URL=http://localhost:8000 -p 8000:8000 -v /docker/paperless/data:/data -v /docker/paperless/media:/media -v /docker/paperless/export:/export -v /docker/paperless/consume:/consume --restart unless-stopped lscr.io/linuxserver/paperless-ngx:latest'
+  },
+  {
+    id: 'vikunja',
+    name: 'Vikunja',
+    category: 'Productivity',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vikunja.png',
+    desc: 'The open-source to-do app.',
+    cmd: 'docker run -d --name=vikunja -p 3456:3456 -v /docker/vikunja:/app/vikunja/files --restart unless-stopped vikunja/vikunja:latest'
+  },
+  {
+    id: 'linkding',
+    name: 'Linkding',
+    category: 'Productivity',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/linkding.png',
+    desc: 'Self-hosted bookmark manager.',
+    cmd: 'docker run -d --name=linkding -p 9090:9090 -v /docker/linkding/data:/etc/linkding/data --restart unless-stopped sissbruecker/linkding:latest'
+  },
 
-    // --- Gaming ---
-    {
-        id: 'minecraft',
-        name: 'Minecraft Server',
-        category: 'Gaming',
-        icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/minecraft.png',
-        desc: 'Minecraft Java Edition server.',
-        cmd: 'docker run -d --name=minecraft -p 25565:25565 -e EULA=TRUE -v /docker/minecraft:/data --restart unless-stopped itzg/minecraft-server'
-    }
+  // --- Development ---
+  {
+    id: 'vscode',
+    name: 'Code Server',
+    category: 'Development',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/vscode.png',
+    desc: 'VS Code in your browser.',
+    cmd: 'docker run -d --name=code-server -e PUID=1000 -e PGID=1000 -e TZ=Etc/UTC -e PASSWORD=changeme -p 8443:8443 -v /docker/code-server/config:/config -v /docker/projects:/config/workspace --restart unless-stopped lscr.io/linuxserver/code-server:latest'
+  },
+  {
+    id: 'gitea',
+    name: 'Gitea',
+    category: 'Development',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/gitea.png',
+    desc: 'Git with a cup of tea.',
+    cmd: 'docker run -d --name=gitea -p 3000:3000 -p 2222:22 -e USER_UID=1000 -e USER_GID=1000 -v /docker/gitea:/data --restart=unless-stopped gitea/gitea:latest'
+  },
+  {
+    id: 'ittools',
+    name: 'IT-Tools',
+    category: 'Development',
+    icon: 'https://it-tools.tech/favicon.ico',
+    desc: 'Collection of handy online tools.',
+    cmd: 'docker run -d --name=it-tools -p 8080:80 --restart unless-stopped corentinth/it-tools:latest'
+  },
+
+  // --- Gaming ---
+  {
+    id: 'minecraft',
+    name: 'Minecraft Server',
+    category: 'Gaming',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/minecraft.png',
+    desc: 'Minecraft Java Edition server.',
+    cmd: 'docker run -d --name=minecraft -e EULA=TRUE -e TZ=Etc/UTC -p 25565:25565 -v /docker/minecraft:/data --restart unless-stopped itzg/minecraft-server:latest'
+  },
+  {
+    id: 'factorio',
+    name: 'Factorio Server',
+    category: 'Gaming',
+    icon: 'https://cdn.jsdelivr.net/gh/walkxcode/dashboard-icons/png/factorio.png',
+    desc: 'Factorio headless server.',
+    cmd: 'docker run -d --name=factorio -p 34197:34197/udp -v /docker/factorio:/factorio -e UPDATE_MODS_ON_START=true --restart unless-stopped factoriotools/factorio:latest'
+  }
 ];
+
 
 
 const WALLPAPERS = [
@@ -546,9 +653,12 @@ function Window({ config, children, isActive, onFocus, onClose, onMinimize, onMa
       ref={windowRef}
       className={`absolute flex flex-col glass-panel rounded-xl overflow-hidden shadow-2xl ${isDraggingState ? 'transition-none' : 'transition-all duration-200'} ${isActive ? 'z-50 ring-1 ring-white/10' : 'z-10 opacity-90 scale-[0.99] grayscale-[0.2]'}`}
       style={windowStyle}
-      onMouseDown={handleMouseDown}
+      onMouseDown={() => onFocus()}
     >
-        <div className="window-header h-11 bg-black/40 flex items-center justify-between px-4 select-none cursor-default border-b border-white/5">
+        <div
+          className="window-header h-11 bg-black/40 flex items-center justify-between px-4 select-none cursor-default border-b border-white/5 active:cursor-grabbing"
+          onMouseDown={handleMouseDown}
+        >
             <div className="flex space-x-2 group">
               <button onClick={(e) => {e.stopPropagation(); onClose();}} className="w-3 h-3 rounded-full bg-[#FF5F57] text-[#FF5F57] hover:text-black/50 flex items-center justify-center transition-colors">
                 <X size={8} className="opacity-0 group-hover:opacity-100"/>
@@ -612,6 +722,7 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
   const [viewMode, setViewMode] = useState('grid');
   const [uploading, setUploading] = useState(false);
   const [search, setSearch] = useState('');
+  const [sortBy, setSortBy] = useState('name');
   const [selected, setSelected] = useState(null);
   const [dragOverFolder, setDragOverFolder] = useState(null);
 
@@ -657,27 +768,31 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
       reader.readAsDataURL(file);
   };
 
-  // --- Drag & Drop Sidebar Logic ---
   const handleDropOnSidebar = async (e, targetPath) => {
       e.preventDefault();
       e.stopPropagation();
       const srcPath = e.dataTransfer.getData("text/plain");
       if (srcPath && targetPath && srcPath !== targetPath) {
           try {
-             // Move operation
              await fetch(`${serverUrl}/api/files/move`, {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ sourcePath: srcPath, destPath: targetPath })
              });
-             // If we moved from current view, refresh
              if (srcPath.startsWith(path)) loadFiles(path);
           } catch (e) { console.error("Move failed", e); }
       }
       setDragOverFolder(null);
   };
 
-  const filteredFiles = files.filter(f => f.name.toLowerCase().includes(search.toLowerCase()));
+  const sortedFiles = [...files].filter(f => f.name.toLowerCase().includes(search.toLowerCase())).sort((a, b) => {
+      if (a.type !== b.type) return a.type === 'folder' ? -1 : 1;
+      if (sortBy === 'name') return a.name.localeCompare(b.name);
+      if (sortBy === 'size') return b.size - a.size;
+      if (sortBy === 'date') return new Date(b.modified) - new Date(a.modified);
+      return 0;
+  });
+
   const pathParts = path ? path.split((path.includes('\\') ? '\\' : '/')).filter(Boolean) : [];
 
   const Breadcrumbs = () => (
@@ -717,28 +832,45 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
       )
   };
 
-  const diskPercent = stats?.storage ? Math.round((stats.storage.used / stats.storage.total) * 100) : 0;
+  const drives = stats?.storage?.drives || [];
 
   return (
     <div className="flex h-full text-zinc-200 relative bg-[#09090b]">
       {/* Sidebar */}
       <div className="w-60 border-r border-white/5 flex flex-col bg-black/20 backdrop-blur-md">
-          <div className="p-4">
+          <div className="p-4 flex-1 overflow-y-auto scrollbar-hide">
               <div className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-4 px-2">Drives</div>
-              <div className="px-3 py-3 bg-white/5 rounded-xl border border-white/5 mb-6">
-                 <div className="flex items-center gap-3 mb-2">
-                     <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400"><HardDrive size={18}/></div>
-                     <div>
-                         <div className="text-xs font-bold text-white">Local Disk</div>
-                         <div className="text-[10px] text-zinc-500">{formatBytes(stats?.storage?.used)} / {formatBytes(stats?.storage?.total)}</div>
-                     </div>
-                 </div>
-                 <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden">
-                     <div className={`h-full rounded-full transition-all duration-1000 ${diskPercent > 90 ? 'bg-red-500' : 'bg-blue-500'}`} style={{width: `${diskPercent}%`}}/>
-                 </div>
-              </div>
 
-              <div className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 px-2">Favorites</div>
+              {drives.length === 0 ? (
+                  <div className="px-4 py-3 text-xs text-zinc-500 italic text-center">No drives detected</div>
+              ) : (
+                  drives.map((drive, idx) => (
+                      <div
+                        key={idx}
+                        onClick={() => loadFiles(drive.mount)}
+                        className="px-3 py-3 bg-white/5 rounded-xl border border-white/5 mb-3 group hover:bg-white/10 transition-colors cursor-pointer"
+                      >
+                        <div className="flex items-center gap-3 mb-2">
+                            <div className="p-2 bg-blue-500/20 rounded-lg text-blue-400 group-hover:scale-110 transition-transform">
+                                {drive.mount === '/' ? <HardDrive size={18}/> : <Usb size={18}/>}
+                            </div>
+                            <div className="overflow-hidden">
+                                <div className="text-xs font-bold text-white truncate" title={drive.fs || "Drive"}>{drive.fs || "Local Disk"}</div>
+                                <div className="text-[10px] text-zinc-500 truncate" title={drive.mount}>{drive.mount}</div>
+                            </div>
+                        </div>
+                        <div className="flex justify-between text-[9px] text-zinc-500 mb-1">
+                            <span>{formatBytes(drive.used)}</span>
+                            <span>{formatBytes(drive.size)}</span>
+                        </div>
+                        <div className="h-1.5 w-full bg-black/50 rounded-full overflow-hidden">
+                            <div className={`h-full rounded-full transition-all duration-1000 ${drive.use > 90 ? 'bg-red-500' : 'bg-blue-500'}`} style={{width: `${drive.use}%`}}/>
+                        </div>
+                    </div>
+                  ))
+              )}
+
+              <div className="text-xs font-bold uppercase tracking-widest text-zinc-500 mb-2 mt-4 px-2">Favorites</div>
               <SidebarLink icon={<Home />} label="Home" target={homeDir} />
               <SidebarLink icon={<Monitor />} label="Desktop" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Desktop` : `${homeDir}/Desktop`) : ''} />
               <SidebarLink icon={<Download />} label="Downloads" target={homeDir ? (path.includes('\\') ? `${homeDir}\\Downloads` : `${homeDir}/Downloads`) : ''} />
@@ -763,6 +895,15 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
               </div>
 
               <div className="flex items-center gap-2">
+                 <div className="bg-[#1a1a1a] rounded-lg border border-white/5 flex items-center px-2">
+                     <span className="text-[10px] text-zinc-500 mr-2 uppercase tracking-wider font-bold">Sort</span>
+                     <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="bg-transparent text-xs text-white outline-none border-none py-1.5 cursor-pointer">
+                         <option value="name">Name</option>
+                         <option value="size">Size</option>
+                         <option value="date">Date</option>
+                     </select>
+                 </div>
+
                 <div className="flex bg-[#1a1a1a] rounded-lg p-1 border border-white/5">
                     <button onClick={() => setViewMode('grid')} className={`p-1.5 rounded-md transition-all ${viewMode === 'grid' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}><LayoutGrid size={16}/></button>
                     <button onClick={() => setViewMode('list')} className={`p-1.5 rounded-md transition-all ${viewMode === 'list' ? 'bg-white/10 text-white' : 'text-zinc-500 hover:text-zinc-300'}`}><List size={16}/></button>
@@ -798,14 +939,14 @@ function FileManager({ serverUrl, isConnected, onOpenFile, onContextMenu, refres
                 <div className="grid grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
                     {[1,2,3,4,5,6,7,8].map(i => <div key={i} className="h-24 bg-white/5 rounded-xl animate-pulse"/>)}
                 </div>
-              ) : filteredFiles.length === 0 ? (
+              ) : sortedFiles.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-zinc-600">
                       <Folder size={48} className="mb-4 opacity-20"/>
                       <span className="text-sm">Empty Directory</span>
                   </div>
               ) : (
               <div className={viewMode === 'grid' ? "grid grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4" : "flex flex-col gap-1"}>
-                  {filteredFiles.map((f, i) => {
+                  {sortedFiles.map((f, i) => {
                       const isImg = ['jpg','jpeg','png','gif','webp'].some(e => f.name.toLowerCase().endsWith(e));
                       const isSelected = selected === f.path;
                       const isDragTarget = dragOverFolder === f.path;
