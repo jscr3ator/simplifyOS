@@ -21,7 +21,7 @@ FROM node:20-alpine
 WORKDIR /app
 
 # If your app needs docker (your previous version used docker-cli)
-RUN apk add --no-cache docker-cli
+RUN apk add --no-cache docker-cli util-linux
 
 COPY package.json ./
 RUN npm install --omit=dev
